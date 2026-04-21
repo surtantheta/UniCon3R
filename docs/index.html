@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="UniCon3R: Contact-Driven Human-Scene Reconstruction from Monocular Video">
+  <meta property="og:title" content="UniCon3R">
+  <meta property="og:description"
+    content="Contact-aware unified human-scene reconstruction from monocular video with physically grounded motion and dense contact prediction.">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="static/images/teaser.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="keywords"
+    content="Human Mesh Recovery, Contact Estimation, 4D Reconstruction, Human-Scene Interaction, Monocular Video">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>UniCon3R</title>
+  <link rel="icon" type="image/png" href="static/images/teaser.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+</head>
+
+<body>
+
+  <section class="hero hero-gradient">
+    <div class="hero-body">
+      <div class="container is-max-widescreen">
+        <div class="columns is-centered">
+          <div class="column is-four-fifths has-text-centered">
+            <h1 class="title is-1 publication-title">
+              UniCon3R: Contact-Driven Human-Scene Reconstruction from Monocular Video
+            </h1>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block"><a href="https://surtantheta.github.io/" target="_blank"
+                  rel="noopener noreferrer">Tanuj Sur</a><sup>1</sup></span>
+              <span class="author-block"><a href="https://sha2nkt.github.io/" target="_blank"
+                  rel="noopener noreferrer">Shashank Tripathi</a><sup>2</sup></span>
+              <span class="author-block"><a href="https://atnikos.github.io/" target="_blank"
+                  rel="noopener noreferrer">Nikos Athanasiou</a><sup>2</sup></span>
+              <br class="author-line-break">
+              <span class="author-block"><a href="https://www.comp.nus.edu.sg/~hlinhn/" target="_blank"
+                  rel="noopener noreferrer">Ha Linh Nguyen</a><sup>1</sup></span>
+              <span class="author-block"><a href="https://kai422.github.io/" target="_blank"
+                  rel="noopener noreferrer">Kai Xu</a><sup>1</sup></span>
+              <span class="author-block">Michael J. Black<sup>2</sup></span>
+              <span class="author-block">Angela Yao<sup>1</sup></span>
+            </div>
+            <div class="publication-affiliations">
+              <span><sup>1</sup> <a href="https://www.comp.nus.edu.sg/" target="_blank"
+                  rel="noopener noreferrer">National University of Singapore</a></span>
+              <span><sup>2</sup> <a href="https://www.tuebingen.mpg.de/en" target="_blank"
+                  rel="noopener noreferrer">Max Planck Institute for Intelligent Systems, T&uuml;bingen, Germany</a></span>
+            </div>
+
+            <p class="publication-links">
+              <span>[Paper Soon]</span>
+              <span>[arXiv Soon]</span>
+              <span>[Code Soon]</span>
+            </p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt-section" id="overview-video">
+    <div class="container is-max-widescreen">
+      <div class="columns is-centered">
+        <div class="column is-four-fifths has-text-centered">
+          <h2 class="title is-3">Overview Video</h2>
+          <div class="media-frame">
+            <video controls autoplay muted loop playsinline preload="metadata">
+              <source src="static/videos/demo.mp4" type="video/mp4">
+            </video>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight" id="interactive-4d">
+    <div class="container is-max-widescreen">
+      <div class="columns is-centered">
+        <div class="column is-full">
+          <h2 class="title is-3 has-text-centered">Interactive 4D Visualizations</h2>
+
+          <div class="sequence-carousel" data-sequence-carousel>
+            <button class="sequence-nav sequence-nav-prev" type="button" aria-label="Previous sequence"
+              data-sequence-prev>&lsaquo;</button>
+
+            <div class="sequence-slides">
+              <article class="sequence-slide is-active" data-sequence-slide>
+                <div class="sequence-slide-header">
+                  <h3 class="title is-5">Sequence 1</h3>
+                </div>
+                <div class="sequence-panel-grid">
+                  <div class="sequence-panel-card">
+                    <h4>Input Video</h4>
+                    <div class="sequence-media-box">
+                      <video controls autoplay loop muted playsinline preload="auto">
+                        <source src="static/recordings/vid4/reference_10fps.mp4?v=28s-280f" type="video/mp4">
+                      </video>
+                    </div>
+                  </div>
+                  <div class="sequence-panel-card">
+                    <h4>4D Reconstruction Preview</h4>
+                    <div class="sequence-media-box">
+                      <video controls autoplay loop muted playsinline preload="auto" data-preview-video>
+                        <source src="static/recordings/vid4/reconstruction_preview.mp4?v=640-fast-preview"
+                          type="video/mp4">
+                      </video>
+                      <iframe
+                        title="Interactive UniCon3R 4D reconstruction, sequence 1"
+                        data-src="static/viser/?playbackPath=..%2Frecordings%2Fvid4%2Freconstruction.viser%3Fv%3D28s-foreground-cyan-red&amp;initialCameraPosition=0.300705,-0.450101,-1.999547&amp;initialCameraLookAt=0.000215,0.000392,3.500386&amp;initialCameraUp=-0.000078,-1,0.000085"
+                        loading="lazy"
+                        allowfullscreen
+                        hidden>
+                      </iframe>
+                    </div>
+                    <button class="viewer-load-button" type="button" data-load-viewer>
+                      Load interactive 3D viewer
+                    </button>
+                  </div>
+                </div>
+              </article>
+
+              <article class="sequence-slide" data-sequence-slide aria-hidden="true">
+                <div class="sequence-slide-header">
+                  <h3 class="title is-5">Sequence 2</h3>
+                </div>
+                <div class="sequence-panel-grid">
+                  <div class="sequence-panel-card">
+                    <h4>Input Video</h4>
+                    <div class="sequence-media-box">
+                      <video controls autoplay loop muted playsinline preload="auto">
+                        <source src="static/recordings/vid12/reference_10fps.mp4?v=10fps-keyframes" type="video/mp4">
+                      </video>
+                    </div>
+                  </div>
+                  <div class="sequence-panel-card">
+                    <h4>4D Reconstruction Preview</h4>
+                    <div class="sequence-media-box">
+                      <video controls autoplay loop muted playsinline preload="auto" data-preview-video>
+                        <source src="static/recordings/vid12/reconstruction_preview.mp4?v=640-fast-preview"
+                          type="video/mp4">
+                      </video>
+                      <iframe
+                        title="Interactive UniCon3R 4D reconstruction, sequence 2"
+                        data-src="static/viser/?playbackPath=..%2Frecordings%2Fvid12%2Freconstruction.viser%3Fv%3Dforeground-cyan-red&amp;initialCameraPosition=0.301169,-0.449876,-1.999851&amp;initialCameraLookAt=-0.001132,0.000417,3.499998&amp;initialCameraUp=-0.000196,-1,0.000043"
+                        loading="lazy"
+                        allowfullscreen
+                        hidden>
+                      </iframe>
+                    </div>
+                    <button class="viewer-load-button" type="button" data-load-viewer>
+                      Load interactive 3D viewer
+                    </button>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <button class="sequence-nav sequence-nav-next" type="button" aria-label="Next sequence"
+              data-sequence-next>&rsaquo;</button>
+
+            <div class="sequence-dots" aria-label="Sequence selector">
+              <button class="is-active" type="button" aria-label="Show sequence 1" data-sequence-dot></button>
+              <button type="button" aria-label="Show sequence 2" data-sequence-dot></button>
+            </div>
+          </div>
+
+          <p class="section-caption">
+            The default panel uses a pre-rendered MP4 for fast loading. Load the interactive viewer only when you need
+            full 3D navigation.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight" id="abstract">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3 has-text-centered">Abstract</h2>
+          <div class="content has-text-justified paper-copy">
+            <p>
+              We introduce <strong>UniCon3R</strong> (<strong>Uni</strong>fied <strong>Con</strong>tact-aware
+              <strong>3</strong>D <strong>R</strong>econstruction), a unified feed-forward framework for online
+              human-scene 4D reconstruction from monocular videos. Recent advances in feed-forward methods enable
+              real-time world-coordinate human motion and scene reconstruction. However, these often produce spatially
+              misaligned outputs, leading to physically implausible artefacts such as bodies floating above the ground
+              or penetrating solid objects. The key reason is that existing approaches fail to model the physical
+              interaction between the human and the environment. To address this, we explicitly model interaction by
+              inferring 3D contact from human pose and scene geometry and use it as a corrective constraint before
+              generating the final pose. This enables UniCon3R to jointly recover high-fidelity scene geometry and
+              spatially aligned 3D humans within the scene. Experiments on standard human-centric video benchmarks such
+              as RICH, EMDB, 3DPW and SLOPER4D show that UniCon3R outperforms strong baselines across physical
+              plausibility, global human motion estimation and local human mesh recovery while maintaining real-time
+              online inference.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight" id="method">
+    <div class="container is-max-widescreen">
+      <div class="columns is-centered">
+        <div class="column is-four-fifths has-text-centered">
+          <h2 class="title is-3">Method Overview</h2>
+          <div class="media-frame">
+            <img src="static/images/pipeline.png" alt="UniCon3R pipeline" loading="lazy">
+          </div>
+          <div class="content has-text-justified section-copy">
+            <p>
+              UniCon3R extends Human3R with two tightly coupled mechanisms. First, a
+              <strong>scene-aware contact prompt</strong> fuses current-frame scene features, recurrent scene memory,
+              local metric geometry, and temporal contact history to build a physically meaningful interaction token.
+              Second, <strong>contact-guided latent refinement</strong> feeds the refined contact token back into the
+              human branch before SMPL-X regression, turning contact from an auxiliary readout into an internal
+              corrective prior.
+            </p>
+            <p>
+              The result is a unified recurrent reconstruction pipeline that preserves feed-forward efficiency while
+              producing more physically grounded human motion and better body-scene alignment.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight" id="contact-prediction">
+    <div class="container is-max-widescreen">
+      <div class="columns is-centered">
+        <div class="column is-four-fifths has-text-centered">
+          <h2 class="title is-3">Contact Prediction</h2>
+          <p class="section-intro">
+            UniCon3R predicts dense per-vertex contact probabilities and uses them internally to refine the human
+            reconstruction rather than treating contact as a detached side output.
+          </p>
+          <div class="media-frame">
+            <img src="static/images/contact_comparison.png" alt="UniCon3R contact comparison" loading="lazy">
+          </div>
+          <p class="section-caption">
+            Qualitative contact comparison against DECO on in-the-wild web videos. Contact vertices are shown in green
+            on the mesh surface.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt-section" id="global-motion">
+    <div class="container is-max-widescreen">
+      <div class="columns is-centered">
+        <div class="column is-four-fifths has-text-centered">
+          <h2 class="title is-3">Global Trajectory Grounding</h2>
+          <p class="section-intro">
+            On EMDB-2, UniCon3R improves world-aligned trajectory quality and reduces drift relative to Human3R while
+            preserving a unified streaming pipeline.
+          </p>
+          <div class="media-frame">
+            <img src="static/images/global_motion.png" alt="Global motion comparison" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight" id="physical-plausibility">
+    <div class="container is-max-widescreen">
+      <div class="columns is-centered">
+        <div class="column is-four-fifths has-text-centered">
+          <h2 class="title is-3">Physical Plausibility</h2>
+          <p class="section-intro">
+            Contact-guided refinement reduces common artefacts such as skating, hovering, and scene penetration.
+          </p>
+          <div class="media-frame">
+            <img src="static/images/plausibility.png" alt="Physical plausibility comparison" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight" id="local-mesh">
+    <div class="container is-max-widescreen">
+      <div class="columns is-centered">
+        <div class="column is-four-fifths has-text-centered">
+          <h2 class="title is-3">Local Mesh Reconstruction</h2>
+          <p class="section-intro">
+            UniCon3R preserves competitive local mesh accuracy on SLOPER4D and 3DPW while substantially reducing
+            maximum scene penetration on SLOPER4D.
+          </p>
+          <div class="media-frame">
+            <img src="static/images/local_mesh.png" alt="Local mesh reconstruction comparison" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight">
+    <div class="container is-max-widescreen">
+      <div class="columns is-centered">
+        <div class="column is-four-fifths has-text-centered">
+          <h2 class="title is-3">Qualitative Local Mesh Results</h2>
+          <p class="section-intro">
+            UniCon3R produces local body pose and scene alignment closer to ground truth, especially in examples where
+            body-scene support is visually clear.
+          </p>
+          <div class="media-frame">
+            <img src="static/images/local_mesh_qualitative.png" alt="Qualitative local mesh comparison" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt-section" id="quantitative-results">
+    <div class="container is-max-widescreen">
+      <div class="columns is-centered">
+        <div class="column is-full">
+          <h2 class="title is-3 has-text-centered">Quantitative Results</h2>
+          <p class="table-note has-text-centered">
+            <code>Human3R*</code> denotes the released checkpoint evaluated in our pipeline, and
+            <code>Human3R†</code> is the controlled fine-tuning baseline.
+          </p>
+
+          <div class="table-block">
+            <h3 class="title is-4">Global Human Motion Estimation</h3>
+            <div class="table-scroll">
+              <table class="results-table">
+                <thead>
+                  <tr>
+                    <th rowspan="2">Method</th>
+                    <th rowspan="2">Scene</th>
+                    <th rowspan="2">Contact</th>
+                    <th colspan="4">RICH</th>
+                    <th colspan="4">EMDB-2</th>
+                  </tr>
+                  <tr>
+                    <th>WA-MPJPE</th>
+                    <th>W-MPJPE</th>
+                    <th>RTE (%)</th>
+                    <th>PA-MPJPE</th>
+                    <th>WA-MPJPE</th>
+                    <th>W-MPJPE</th>
+                    <th>RTE (%)</th>
+                    <th>PA-MPJPE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>JOSH3R</td><td>&check;</td><td>&cross;</td>
+                    <td>190.4</td><td>334.9</td><td>6.3</td><td>&mdash;</td>
+                    <td>220.0</td><td>661.7</td><td>13.1</td><td>&mdash;</td>
+                  </tr>
+                  <tr>
+                    <td>UniSH</td><td>&check;</td><td>&check;</td>
+                    <td>118.1</td><td>183.2</td><td>4.8</td><td>&mdash;</td>
+                    <td>118.5</td><td class="best">270.1</td><td>5.8</td><td>&mdash;</td>
+                  </tr>
+                  <tr>
+                    <td>Human3R*</td><td>&check;</td><td>&cross;</td>
+                    <td>109.9</td><td>184.0</td><td>3.3</td><td>48.6</td>
+                    <td class="second-best">118.2</td><td>286.1</td><td class="second-best">2.4</td><td class="second-best">38.7</td>
+                  </tr>
+                  <tr>
+                    <td>Human3R&#8224;</td><td>&check;</td><td>&cross;</td>
+                    <td class="second-best">97.5</td><td class="second-best">153.2</td><td class="second-best">2.3</td><td class="second-best">41.4</td>
+                    <td>156.7</td><td>378.6</td><td>3.5</td><td>40.6</td>
+                  </tr>
+                  <tr>
+                    <td>Parallel Readout (Ours)</td><td>&check;</td><td>&check;</td>
+                    <td>97.9</td><td>153.5</td><td class="second-best">2.3</td><td>41.5</td>
+                    <td>160.7</td><td>388.3</td><td>3.6</td><td>50.9</td>
+                  </tr>
+                  <tr class="ours">
+                    <td>UniCon3R (Ours)</td><td>&check;</td><td>&check;</td>
+                    <td class="best">81.5</td><td class="best">129.8</td><td class="best">1.7</td><td class="best">37.6</td>
+                    <td class="best">113.7</td><td class="second-best">285.6</td><td class="best">2.3</td><td class="best">38.2</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="table-block">
+            <h3 class="title is-4">Local Human Mesh Reconstruction</h3>
+            <p class="table-note">
+              PVE and MPJPE are in mm; Pen. Max is in cm. Missing entries indicate that the metric is not reported for
+              the method.
+            </p>
+            <div class="table-scroll">
+              <table class="results-table">
+                <thead>
+                  <tr>
+                    <th rowspan="2">Method</th>
+                    <th colspan="3">SLOPER4D</th>
+                    <th colspan="2">3DPW</th>
+                  </tr>
+                  <tr>
+                    <th>PVE (mm)</th>
+                    <th>MPJPE (mm)</th>
+                    <th>Pen. Max (cm)</th>
+                    <th>PVE (mm)</th>
+                    <th>MPJPE (mm)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Human3R*</td>
+                    <td>155.1</td><td>179.1</td><td class="second-best">219.7</td>
+                    <td class="best">86.6</td><td class="second-best">72.8</td>
+                  </tr>
+                  <tr>
+                    <td>Human3R&#8224;</td>
+                    <td class="second-best">153.4</td><td class="second-best">176.7</td><td>300.4</td>
+                    <td>91.3</td><td>76.9</td>
+                  </tr>
+                  <tr>
+                    <td>UniSH</td>
+                    <td>&mdash;</td><td>&mdash;</td><td>725.4</td>
+                    <td>&mdash;</td><td>&mdash;</td>
+                  </tr>
+                  <tr class="ours">
+                    <td>UniCon3R (Ours)</td>
+                    <td class="best">152.9</td><td class="best">176.1</td><td class="best">120.3</td>
+                    <td class="second-best">86.8</td><td class="best">72.5</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="columns">
+            <div class="column">
+              <div class="table-block">
+                <h3 class="title is-4">Contact Estimation on RICH</h3>
+                <div class="table-scroll">
+                  <table class="results-table compact-table">
+                    <thead>
+                      <tr>
+                        <th>Method</th>
+                        <th>Precision</th>
+                        <th>Recall</th>
+                        <th>F1</th>
+                        <th>Geo.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>DECO</td><td class="best">0.71</td><td class="second-best">0.76</td><td class="second-best">0.70</td><td>17.92</td></tr>
+                      <tr><td>InteractVLM</td><td>0.63</td><td>0.63</td><td>0.60</td><td class="second-best">15.70</td></tr>
+                      <tr><td>Human3R*</td><td>0.07</td><td>0.13</td><td>0.08</td><td>76.10</td></tr>
+                      <tr><td>Parallel Readout (Ours)</td><td>0.59</td><td>0.72</td><td>0.62</td><td>20.68</td></tr>
+                      <tr class="ours"><td>UniCon3R (Ours)</td><td class="second-best">0.64</td><td class="best">0.80</td><td class="best">0.71</td><td class="best">14.98</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="table-block">
+                <h3 class="title is-4">Physical Grounding on RICH</h3>
+                <div class="table-scroll">
+                  <table class="results-table compact-table">
+                    <thead>
+                      <tr>
+                        <th>Method</th>
+                        <th>Coll.</th>
+                        <th>Pen.</th>
+                        <th>Float</th>
+                        <th>P.Max</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>UniSH</td><td class="second-best">7.39</td><td class="second-best">6.01</td><td>37.94</td><td class="second-best">67.87</td></tr>
+                      <tr><td>Human3R*</td><td>7.40</td><td>6.40</td><td class="second-best">33.56</td><td>216.97</td></tr>
+                      <tr><td>Human3R&#8224;</td><td>7.72</td><td>7.69</td><td>37.52</td><td>259.54</td></tr>
+                      <tr><td>Parallel Readout (Ours)</td><td>7.71</td><td>7.56</td><td>37.05</td><td>254.91</td></tr>
+                      <tr class="ours"><td>UniCon3R (Ours)</td><td class="best">5.54</td><td class="best">1.59</td><td class="best">5.50</td><td class="best">17.54</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-block">
+            <h3 class="title is-4">Ablation Study on RICH</h3>
+            <div class="table-scroll">
+              <table class="results-table">
+                <thead>
+                  <tr>
+                    <th rowspan="2">Model Variant</th>
+                    <th colspan="4">Architectural Components</th>
+                    <th colspan="2">Global Motion</th>
+                    <th colspan="2">Physical Plausibility</th>
+                  </tr>
+                  <tr>
+                    <th>Context</th>
+                    <th>Geometry</th>
+                    <th>Momentum</th>
+                    <th>Latent Ref.</th>
+                    <th>WA-MPJPE</th>
+                    <th>W-MPJPE</th>
+                    <th>Foot Sliding</th>
+                    <th>Jitter</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Human3R*</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>97.5</td><td>153.2</td><td>37.7</td><td>279.5</td></tr>
+                  <tr><td>Parallel Readout</td><td>&cross;</td><td>&cross;</td><td>&cross;</td><td>&cross;</td><td>90.2</td><td>142.7</td><td>35.3</td><td>262.5</td></tr>
+                  <tr><td>+ Scene Context</td><td>&check;</td><td>&cross;</td><td>&cross;</td><td>&cross;</td><td>89.4</td><td>140.6</td><td>35.0</td><td>260.1</td></tr>
+                  <tr><td>+ Explicit Geometry</td><td>&check;</td><td>&check;</td><td>&cross;</td><td>&cross;</td><td>85.9</td><td class="second-best">134.5</td><td>33.1</td><td>244.6</td></tr>
+                  <tr><td>+ Temporal Momentum</td><td>&check;</td><td>&check;</td><td>&check;</td><td>&cross;</td><td class="second-best">85.3</td><td>135.1</td><td class="second-best">32.0</td><td class="second-best">231.8</td></tr>
+                  <tr class="ours"><td>+ Latent Refinement (UniCon3R)</td><td>&check;</td><td>&check;</td><td>&check;</td><td>&check;</td><td class="best">81.5</td><td class="best">129.8</td><td class="best">31.5</td><td class="best">221.4</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight" id="runtime">
+    <div class="container is-max-widescreen">
+      <div class="columns is-centered">
+        <div class="column is-two-thirds">
+          <h2 class="title is-3 has-text-centered">Runtime</h2>
+          <div class="columns">
+            <div class="column">
+              <div class="table-block">
+                <h3 class="title is-5">End-to-End Reconstruction FPS</h3>
+                <table class="results-table compact-table">
+                  <thead>
+                    <tr>
+                      <th>Method</th>
+                      <th>FPS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>UniSH</td><td>2.6</td></tr>
+                    <tr><td>Human3R*</td><td class="best">2.4</td></tr>
+                    <tr class="ours"><td>UniCon3R (Ours)</td><td class="best">2.4</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="column">
+              <div class="table-block">
+                <h3 class="title is-5">Contact Prediction Time / Frame</h3>
+                <table class="results-table compact-table">
+                  <thead>
+                    <tr>
+                      <th>Method</th>
+                      <th>Seconds</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>DECO</td><td>1.1</td></tr>
+                    <tr><td>InteractVLM</td><td>3.5</td></tr>
+                    <tr class="ours"><td>UniCon3R (Ours)</td><td class="best">0.5</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (() => {
+      const carousel = document.querySelector("[data-sequence-carousel]");
+      if (!carousel) return;
+
+      const slides = Array.from(carousel.querySelectorAll("[data-sequence-slide]"));
+      const dots = Array.from(carousel.querySelectorAll("[data-sequence-dot]"));
+      const previous = carousel.querySelector("[data-sequence-prev]");
+      const next = carousel.querySelector("[data-sequence-next]");
+      let activeIndex = 0;
+
+      function loadInteractiveViewer(slide, button) {
+        const iframe = slide.querySelector("iframe[data-src]");
+        const preview = slide.querySelector("[data-preview-video]");
+        if (!iframe) return;
+
+        if (!iframe.getAttribute("src")) {
+          iframe.setAttribute("src", iframe.dataset.src);
+        }
+        if (preview) {
+          preview.pause();
+          preview.hidden = true;
+        }
+        iframe.hidden = false;
+        if (button) {
+          button.textContent = "Interactive 3D viewer loaded";
+          button.disabled = true;
+        }
+      }
+
+      function showSlide(index) {
+        activeIndex = (index + slides.length) % slides.length;
+        slides.forEach((slide, slideIndex) => {
+          const isActive = slideIndex === activeIndex;
+          slide.classList.toggle("is-active", isActive);
+          slide.setAttribute("aria-hidden", isActive ? "false" : "true");
+        });
+        dots.forEach((dot, dotIndex) => {
+          dot.classList.toggle("is-active", dotIndex === activeIndex);
+        });
+      }
+
+      previous?.addEventListener("click", () => showSlide(activeIndex - 1));
+      next?.addEventListener("click", () => showSlide(activeIndex + 1));
+      dots.forEach((dot, dotIndex) => {
+        dot.addEventListener("click", () => showSlide(dotIndex));
+      });
+      slides.forEach((slide) => {
+        const button = slide.querySelector("[data-load-viewer]");
+        button?.addEventListener("click", () => loadInteractiveViewer(slide, button));
+      });
+      showSlide(0);
+    })();
+  </script>
+
+</body>
+
+</html>
