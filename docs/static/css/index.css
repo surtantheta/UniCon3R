@@ -332,30 +332,6 @@ p,
   object-fit: contain;
 }
 
-.viewer-load-button {
-  display: block;
-  padding: 0.4rem 0.85rem;
-  margin: 0.65rem auto 0;
-  color: #224b8d;
-  background: #fff;
-  border: 1px solid #d7d7d7;
-  border-radius: 999px;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: normal;
-}
-
-.viewer-load-button:hover:not(:disabled) {
-  color: #17376b;
-  border-color: #999;
-}
-
-.viewer-load-button:disabled {
-  color: #777;
-  cursor: default;
-}
-
 .sequence-nav {
   position: absolute;
   top: calc(50% - 18px);
