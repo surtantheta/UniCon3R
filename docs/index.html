@@ -141,8 +141,8 @@
                   <div class="sequence-panel-card">
                     <h4>Input Video</h4>
                     <div class="sequence-media-box">
-                      <video controls loop muted playsinline preload="auto" data-sync-video>
-                        <source src="static/recordings/vid4/reference_10fps.mp4?v=28s-280f" type="video/mp4">
+                      <video controls loop muted playsinline preload="metadata" data-sync-video>
+                        <source src="static/recordings/vid4/reference_10fps.mp4?v=web-optimized-20260423" type="video/mp4">
                       </video>
                     </div>
                   </div>
@@ -169,8 +169,8 @@
                   <div class="sequence-panel-card">
                     <h4>Input Video</h4>
                     <div class="sequence-media-box">
-                      <video controls loop muted playsinline preload="auto" data-sync-video>
-                        <source src="static/recordings/vid12/reference_10fps.mp4?v=10fps-keyframes" type="video/mp4">
+                      <video controls loop muted playsinline preload="metadata" data-sync-video>
+                        <source src="static/recordings/vid12/reference_10fps.mp4?v=web-optimized-20260423" type="video/mp4">
                       </video>
                     </div>
                   </div>
@@ -179,8 +179,8 @@
                     <div class="sequence-media-box">
                       <iframe
                         title="Interactive UniCon3R 4D reconstruction, sequence 2"
-                        src="static/viser/?playbackPath=..%2Frecordings%2Fvid12%2Freconstruction.viser%3Fv%3Dcamera-key-red-cyan&amp;initialCameraPosition=0.301169,-0.449876,-1.999851&amp;initialCameraLookAt=-0.001132,0.000417,3.499998&amp;initialCameraUp=-0.000196,-1,0.000043"
-                        loading="eager"
+                        data-src="static/viser/?playbackPath=..%2Frecordings%2Fvid12%2Freconstruction.viser%3Fv%3Dcamera-key-red-cyan&amp;initialCameraPosition=0.301169,-0.449876,-1.999851&amp;initialCameraLookAt=-0.001132,0.000417,3.499998&amp;initialCameraUp=-0.000196,-1,0.000043"
+                        loading="lazy"
                         data-sync-viewer
                         allowfullscreen>
                       </iframe>
@@ -326,13 +326,36 @@
       const next = carousel.querySelector("[data-sequence-next]");
       let activeIndex = 0;
 
+      function ensureSlideAssets(slide) {
+        const iframe = slide.querySelector("[data-sync-viewer]");
+        if (iframe?.dataset.src && !iframe.hasAttribute("src")) {
+          iframe.src = iframe.dataset.src;
+        }
+        const video = slide.querySelector("[data-sync-video]");
+        if (video?.preload === "none") {
+          video.preload = "metadata";
+        }
+        video?.load();
+      }
+
       function startSyncedVideo(slide) {
         const video = slide.querySelector("[data-sync-video]");
-        if (!video || slide.dataset.viewerReady !== "true") return;
+        if (!video || slide.dataset.viewerReady !== "true" || slides[activeIndex] !== slide) return;
         video.currentTime = 0;
         video.play().catch(() => {
           // Autoplay can still be blocked by some browsers; controls remain available.
         });
+      }
+
+      function preloadNextSlide(fromIndex) {
+        if (slides.length < 2) return;
+        const nextIndex = (fromIndex + 1) % slides.length;
+        const callback = () => ensureSlideAssets(slides[nextIndex]);
+        if ("requestIdleCallback" in window) {
+          window.requestIdleCallback(callback, { timeout: 2500 });
+        } else {
+          window.setTimeout(callback, 1500);
+        }
       }
 
       function showSlide(index) {
@@ -341,10 +364,15 @@
           const isActive = slideIndex === activeIndex;
           slide.classList.toggle("is-active", isActive);
           slide.setAttribute("aria-hidden", isActive ? "false" : "true");
+          if (!isActive) {
+            slide.querySelector("[data-sync-video]")?.pause();
+          }
         });
         dots.forEach((dot, dotIndex) => {
           dot.classList.toggle("is-active", dotIndex === activeIndex);
         });
+        ensureSlideAssets(slides[activeIndex]);
+        startSyncedVideo(slides[activeIndex]);
       }
 
       previous?.addEventListener("click", () => showSlide(activeIndex - 1));
@@ -369,6 +397,7 @@
         if (!slide) return;
         slide.dataset.viewerReady = "true";
         startSyncedVideo(slide);
+        preloadNextSlide(slides.indexOf(slide));
       });
 
       showSlide(0);
