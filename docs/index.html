@@ -59,7 +59,8 @@
             <p class="publication-links">
               <span>[Paper Soon]</span>
               <span>[arXiv Soon]</span>
-              <span>[Code Soon]</span>
+              <span>[<a href="https://github.com/surtantheta/UniCon3R" target="_blank"
+                    rel="noopener noreferrer">Code (Coming Soon)</a>]</span>
             </p>
 
           </div>
@@ -72,32 +73,48 @@
     <div class="container is-max-widescreen">
       <div class="columns is-centered">
         <div class="column is-full">
-          <h2 class="title is-3 has-text-centered">Interactive 4D Visualizations</h2>
+          <h2 class="title is-3 has-text-centered">Interactive 4D Visualization</h2>
+          <p class="section-intro has-text-centered viewer-intro">
+            Explore the 4D reconstruction results of <strong>UniCon3R</strong> on various dynamic scenes.
+            Use the controls below to orbit the scene, zoom, and fly through the reconstruction.
+          </p>
 
-          <div class="viewer-instructions" aria-label="Interactive viewer controls">
+          <div class="viewer-instructions viewer-instructions-mouse" aria-label="Mouse controls">
             <div class="viewer-instruction">
-              <span class="mouse-icon mouse-left" aria-hidden="true"></span>
-              <span>Drag with <em>left click</em> to rotate view</span>
+              <img src="static/images/icons/left-click.png" alt="Left click" class="icon-mouse">
+              <span>Drag with <em>left</em> click to <strong>rotate</strong> view</span>
             </div>
             <div class="viewer-instruction">
-              <span class="mouse-icon mouse-scroll" aria-hidden="true"></span>
-              <span>Scroll to zoom in/out</span>
+              <img src="static/images/icons/scroll-wheel.png" alt="Scroll wheel" class="icon-mouse">
+              <span>Scroll to <strong>zoom</strong> in/out</span>
             </div>
             <div class="viewer-instruction">
-              <span class="mouse-icon mouse-right" aria-hidden="true"></span>
-              <span>Drag with <em>right click</em> to move view</span>
+              <img src="static/images/icons/right-click.png" alt="Right click" class="icon-mouse">
+              <span>Drag with <em>right</em> click to <strong>move</strong> view</span>
+            </div>
+          </div>
+
+          <div class="viewer-instructions viewer-instructions-keys" aria-label="Keyboard controls">
+            <div class="viewer-instruction">
+              <span class="key-pair-img" aria-hidden="true">
+                <img src="static/images/icons/letter-w.png" alt="">
+                <img src="static/images/icons/letter-s.png" alt="">
+              </span>
+              <span>Moving forward and backward</span>
             </div>
             <div class="viewer-instruction">
-              <span class="key-pair" aria-hidden="true"><kbd>W</kbd><kbd>S</kbd></span>
-              <span>Move forward and backward</span>
+              <span class="key-pair-img" aria-hidden="true">
+                <img src="static/images/icons/letter-a.png" alt="">
+                <img src="static/images/icons/letter-d.png" alt="">
+              </span>
+              <span>Moving left and right</span>
             </div>
             <div class="viewer-instruction">
-              <span class="key-pair" aria-hidden="true"><kbd>A</kbd><kbd>D</kbd></span>
-              <span>Move left and right</span>
-            </div>
-            <div class="viewer-instruction">
-              <span class="key-pair" aria-hidden="true"><kbd>Q</kbd><kbd>E</kbd></span>
-              <span>Move upward and downward</span>
+              <span class="key-pair-img" aria-hidden="true">
+                <img src="static/images/icons/letter-q.png" alt="">
+                <img src="static/images/icons/letter-e.png" alt="">
+              </span>
+              <span>Moving upward and downward</span>
             </div>
           </div>
 
