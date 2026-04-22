@@ -44,8 +44,10 @@
                   rel="noopener noreferrer">Ha Linh Nguyen</a><sup>1</sup></span>
               <span class="author-block"><a href="https://kai422.github.io/" target="_blank"
                   rel="noopener noreferrer">Kai Xu</a><sup>1</sup></span>
-              <span class="author-block">Michael J. Black<sup>2</sup></span>
-              <span class="author-block">Angela Yao<sup>1</sup></span>
+              <span class="author-block"><a href="https://is.mpg.de/ps/person/black" target="_blank"
+                  rel="noopener noreferrer">Michael J. Black</a><sup>2</sup></span>
+              <span class="author-block"><a href="https://www.comp.nus.edu.sg/~ayao/" target="_blank"
+                  rel="noopener noreferrer">Angela Yao</a><sup>1</sup></span>
             </div>
             <div class="publication-affiliations">
               <span><sup>1</sup> <a href="https://www.comp.nus.edu.sg/" target="_blank"
@@ -159,17 +161,19 @@
             <p>
               We introduce <strong>UniCon3R</strong> (<strong>Uni</strong>fied <strong>Con</strong>tact-aware
               <strong>3</strong>D <strong>R</strong>econstruction), a unified feed-forward framework for online
-              human-scene 4D reconstruction from monocular videos. Recent advances in feed-forward methods enable
-              real-time world-coordinate human motion and scene reconstruction. However, these often produce spatially
-              misaligned outputs, leading to physically implausible artefacts such as bodies floating above the ground
-              or penetrating solid objects. The key reason is that existing approaches fail to model the physical
-              interaction between the human and the environment. To address this, we explicitly model interaction by
-              inferring 3D contact from human pose and scene geometry and use it as a corrective constraint before
-              generating the final pose. This enables UniCon3R to jointly recover high-fidelity scene geometry and
-              spatially aligned 3D humans within the scene. Experiments on standard human-centric video benchmarks such
-              as RICH, EMDB, 3DPW and SLOPER4D show that UniCon3R outperforms strong baselines across physical
-              plausibility, global human motion estimation and local human mesh recovery while maintaining real-time
-              online inference.
+              human-scene 4D reconstruction from monocular videos. Recent feed-forward methods enable real-time
+              world-coordinate human motion and scene reconstruction, but they often produce physically implausible
+              artifacts such as bodies floating above the ground or penetrating parts of the scene. The key reason is
+              that existing approaches fail to model physical interactions between the human and the environment. A
+              natural next step is to predict human-scene contact as an auxiliary output, yet we find this alone is not
+              sufficient: contact must actively correct the reconstruction. To address this, we explicitly model
+              interaction by inferring 3D contact from the human pose and scene geometry and use the contact as a
+              corrective cue for generating the final pose. This enables UniCon3R to jointly recover high-fidelity scene
+              geometry and spatially aligned 3D humans within the scene. Experiments on standard human-centric video
+              benchmarks such as RICH, EMDB, 3DPW and SLOPER4D show that UniCon3R outperforms state-of-the-art baselines
+              on physical plausibility and global human motion estimation while achieving real-time online inference. We
+              experimentally demonstrate that contact serves as a powerful internal prior rather than just an external
+              metric, thus establishing a new paradigm for physically grounded joint human-scene reconstruction.
             </p>
           </div>
         </div>
