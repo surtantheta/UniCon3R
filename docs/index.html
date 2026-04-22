@@ -87,7 +87,7 @@
                   <div class="sequence-panel-card">
                     <h4>Input Video</h4>
                     <div class="sequence-media-box">
-                      <video controls autoplay loop muted playsinline preload="auto">
+                      <video controls loop muted playsinline preload="auto" data-sync-video>
                         <source src="static/recordings/vid4/reference_10fps.mp4?v=28s-280f" type="video/mp4">
                       </video>
                     </div>
@@ -97,8 +97,9 @@
                     <div class="sequence-media-box">
                       <iframe
                         title="Interactive UniCon3R 4D reconstruction, sequence 1"
-                        src="static/viser/?playbackPath=..%2Frecordings%2Fvid4%2Freconstruction.viser%3Fv%3D28s-foreground-cyan-red&amp;initialCameraPosition=0.300705,-0.450101,-1.999547&amp;initialCameraLookAt=0.000215,0.000392,3.500386&amp;initialCameraUp=-0.000078,-1,0.000085"
-                        loading="lazy"
+                        src="static/viser/?playbackPath=..%2Frecordings%2Fvid4%2Freconstruction.viser%3Fv%3Dlighting-dense-sync&amp;initialCameraPosition=0.300705,-0.450101,-1.999547&amp;initialCameraLookAt=0.000215,0.000392,3.500386&amp;initialCameraUp=-0.000078,-1,0.000085"
+                        loading="eager"
+                        data-sync-viewer
                         allowfullscreen>
                       </iframe>
                     </div>
@@ -114,7 +115,7 @@
                   <div class="sequence-panel-card">
                     <h4>Input Video</h4>
                     <div class="sequence-media-box">
-                      <video controls autoplay loop muted playsinline preload="auto">
+                      <video controls loop muted playsinline preload="auto" data-sync-video>
                         <source src="static/recordings/vid12/reference_10fps.mp4?v=10fps-keyframes" type="video/mp4">
                       </video>
                     </div>
@@ -124,8 +125,9 @@
                     <div class="sequence-media-box">
                       <iframe
                         title="Interactive UniCon3R 4D reconstruction, sequence 2"
-                        data-src="static/viser/?playbackPath=..%2Frecordings%2Fvid12%2Freconstruction.viser%3Fv%3Dforeground-cyan-red&amp;initialCameraPosition=0.301169,-0.449876,-1.999851&amp;initialCameraLookAt=-0.001132,0.000417,3.499998&amp;initialCameraUp=-0.000196,-1,0.000043"
-                        loading="lazy"
+                        src="static/viser/?playbackPath=..%2Frecordings%2Fvid12%2Freconstruction.viser%3Fv%3Dlighting-dense-sync&amp;initialCameraPosition=0.301169,-0.449876,-1.999851&amp;initialCameraLookAt=-0.001132,0.000417,3.499998&amp;initialCameraUp=-0.000196,-1,0.000043"
+                        loading="eager"
+                        data-sync-viewer
                         allowfullscreen>
                       </iframe>
                     </div>
@@ -274,11 +276,13 @@
       const next = carousel.querySelector("[data-sequence-next]");
       let activeIndex = 0;
 
-      function ensureViewerLoaded(slide) {
-        const iframe = slide.querySelector("iframe[data-src]");
-        if (iframe && !iframe.getAttribute("src")) {
-          iframe.setAttribute("src", iframe.dataset.src);
-        }
+      function startSyncedVideo(slide) {
+        const video = slide.querySelector("[data-sync-video]");
+        if (!video || slide.dataset.viewerReady !== "true") return;
+        video.currentTime = 0;
+        video.play().catch(() => {
+          // Autoplay can still be blocked by some browsers; controls remain available.
+        });
       }
 
       function showSlide(index) {
@@ -287,7 +291,6 @@
           const isActive = slideIndex === activeIndex;
           slide.classList.toggle("is-active", isActive);
           slide.setAttribute("aria-hidden", isActive ? "false" : "true");
-          if (isActive) ensureViewerLoaded(slide);
         });
         dots.forEach((dot, dotIndex) => {
           dot.classList.toggle("is-active", dotIndex === activeIndex);
@@ -299,6 +302,25 @@
       dots.forEach((dot, dotIndex) => {
         dot.addEventListener("click", () => showSlide(dotIndex));
       });
+
+      slides.forEach((slide) => {
+        slide.dataset.viewerReady = "false";
+        const video = slide.querySelector("[data-sync-video]");
+        video?.pause();
+      });
+
+      window.addEventListener("message", (event) => {
+        if (event.data?.type !== "unicon3r-viser-ready") return;
+        const readyFrame = slides
+          .map((slide) => slide.querySelector("[data-sync-viewer]"))
+          .find((iframe) => iframe?.contentWindow === event.source);
+        if (!readyFrame) return;
+        const slide = readyFrame.closest("[data-sequence-slide]");
+        if (!slide) return;
+        slide.dataset.viewerReady = "true";
+        startSyncedVideo(slide);
+      });
+
       showSlide(0);
     })();
   </script>
