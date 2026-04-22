@@ -48,6 +48,24 @@ a:hover {
   text-align: center;
 }
 
+.publication-title-line {
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 18px;
+}
+
+.publication-title-icon {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  margin-top: -4px;
+}
+
+.publication-title-text {
+  display: inline-block;
+}
+
 .publication-authors {
   margin-bottom: 16px;
   color: #111;
@@ -568,6 +586,17 @@ p,
   .section-intro {
     font-size: 15.5px;
     line-height: 23px;
+  }
+
+  .publication-title-line {
+    align-items: center;
+    gap: 10px;
+  }
+
+  .publication-title-icon {
+    width: 48px;
+    height: 48px;
+    margin-top: 0;
   }
 
   .video-grid {
