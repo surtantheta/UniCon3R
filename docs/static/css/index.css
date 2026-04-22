@@ -262,6 +262,99 @@ p,
   text-align: center;
 }
 
+.viewer-instructions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 18px;
+  align-items: center;
+  margin: 1.1rem auto 0.9rem;
+  color: #111;
+  font-size: 16px;
+  line-height: 22px;
+}
+
+.viewer-instruction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  text-align: left;
+}
+
+.viewer-instruction em {
+  font-style: italic;
+}
+
+.mouse-icon {
+  position: relative;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 36px;
+  border: 2px solid #6aa0ff;
+  border-radius: 14px;
+}
+
+.mouse-icon::before {
+  position: absolute;
+  top: 4px;
+  bottom: 16px;
+  left: 50%;
+  width: 2px;
+  content: "";
+  background: #6aa0ff;
+  transform: translateX(-50%);
+}
+
+.mouse-icon::after {
+  position: absolute;
+  color: #6aa0ff;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.mouse-left::after {
+  top: 11px;
+  left: -14px;
+  content: "\2039";
+}
+
+.mouse-right::after {
+  top: 11px;
+  right: -14px;
+  content: "\203A";
+}
+
+.mouse-scroll::after {
+  top: 6px;
+  left: 50%;
+  content: "\2195";
+  font-size: 17px;
+  transform: translateX(-50%);
+}
+
+.key-pair {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 2px;
+}
+
+.key-pair kbd {
+  min-width: 32px;
+  padding: 4px 8px;
+  color: #386fd7;
+  background: #d8e8ff;
+  border: 1px solid #74a5ff;
+  border-radius: 3px;
+  box-shadow: none;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+}
+
 .sequence-carousel {
   position: relative;
   margin-top: 1.25rem;
@@ -515,6 +608,16 @@ p,
   .interactive-reference video {
     height: auto;
     max-height: 520px;
+  }
+
+  .viewer-instructions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    font-size: 15px;
+  }
+
+  .viewer-instruction {
+    justify-content: flex-start;
   }
 
   .sequence-carousel {
