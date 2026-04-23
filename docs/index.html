@@ -438,6 +438,14 @@
         return `static/viser/?${params.toString()}`;
       }
 
+      function recordingAssetUrl(config) {
+        return `static/recordings/${config.id}/reconstruction.viser?v=${config.version}`;
+      }
+
+      function referenceVideoUrl(config) {
+        return `static/recordings/${config.id}/reference_10fps.mp4?v=${config.version}`;
+      }
+
       function renderSequenceCarousel() {
         const tabContainer = carousel.querySelector("[data-sequence-tabs]");
         const slideContainer = carousel.querySelector("[data-sequence-slides]");
@@ -498,7 +506,7 @@
             <h4>Input Video</h4>
             <div class="sequence-media-box">
               <video controls loop muted playsinline preload="none" data-sync-video>
-                <source src="static/recordings/${config.id}/reference_10fps.mp4?v=${config.version}" type="video/mp4">
+                <source src="${referenceVideoUrl(config)}" type="video/mp4">
               </video>
             </div>
           `;
@@ -716,6 +724,64 @@
         }
       }
 
+      const backgroundPrefetchState = {
+        started: false,
+        fetched: new Set(),
+      };
+
+      function shouldBackgroundPrefetch() {
+        const connection =
+          navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        if (!connection) return true;
+        if (connection.saveData) return false;
+        return !["slow-2g", "2g"].includes(connection.effectiveType);
+      }
+
+      async function prefetchAsset(url) {
+        if (backgroundPrefetchState.fetched.has(url)) return;
+        backgroundPrefetchState.fetched.add(url);
+        try {
+          const response = await fetch(url, {
+            cache: "force-cache",
+            priority: "low",
+          });
+          if (!response.ok) return;
+          if (!response.body) {
+            await response.arrayBuffer();
+            return;
+          }
+          const reader = response.body.getReader();
+          while (true) {
+            const { done } = await reader.read();
+            if (done) break;
+          }
+        } catch {
+          // Prefetch is opportunistic; normal viewer loading still handles failures.
+        }
+      }
+
+      async function prefetchAllSequenceAssets() {
+        if (backgroundPrefetchState.started || !shouldBackgroundPrefetch()) return;
+        backgroundPrefetchState.started = true;
+        const orderedConfigs = [
+          ...sequenceConfigs.slice(activeIndex),
+          ...sequenceConfigs.slice(0, activeIndex),
+        ];
+        for (const config of orderedConfigs) {
+          await prefetchAsset(recordingAssetUrl(config));
+          await prefetchAsset(referenceVideoUrl(config));
+        }
+      }
+
+      function scheduleBackgroundPrefetch() {
+        const callback = () => prefetchAllSequenceAssets();
+        if ("requestIdleCallback" in window) {
+          window.requestIdleCallback(callback, { timeout: 5000 });
+        } else {
+          window.setTimeout(callback, 3500);
+        }
+      }
+
       function showSlide(index) {
         carouselActivated = true;
         activeIndex = (index + slides.length) % slides.length;
@@ -799,6 +865,7 @@
       } else {
         window.setTimeout(activateCarousel, 1200);
       }
+      window.addEventListener("load", scheduleBackgroundPrefetch, { once: true });
     })();
   </script>
 
