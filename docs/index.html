@@ -263,6 +263,56 @@
     </div>
   </section>
 
+  <section class="section section-tight" id="temporal-contact">
+    <div class="container is-max-widescreen">
+      <div class="columns is-centered">
+        <div class="column is-full">
+          <h2 class="title is-3 has-text-centered">Temporal Contact Evolution</h2>
+          <p class="section-intro has-text-centered">
+            UniCon3R predicts dense human-scene contact over time. We visualize frame-wise contact on a canonical
+            T-pose body: cyan marks the current frame and blue shows the recent contact trail.
+          </p>
+
+          <div class="contact-evolution" data-contact-evolution>
+            <div class="contact-tabs" data-contact-tabs aria-label="Contact sequence selector"></div>
+
+            <div class="contact-evolution-grid">
+              <div class="contact-card contact-reference-card">
+                <h3 class="title is-5">Reference Frame</h3>
+                <div class="contact-reference-frame">
+                  <img data-contact-image src="static/contact/vid8/frames/000.jpg" alt="Reference frame for contact visualization">
+                </div>
+                <p class="contact-frame-caption" data-contact-image-caption>Source frame 0 at 0.00s</p>
+              </div>
+
+              <div class="contact-card contact-viewer-card">
+                <h3 class="title is-5">Canonical T-pose Contact</h3>
+                <div class="contact-viewer-frame">
+                  <canvas data-contact-canvas aria-label="Temporal T-pose contact viewer"></canvas>
+                  <div class="contact-status" data-contact-status>Loading temporal contact viewer...</div>
+                </div>
+                <div class="contact-legend" aria-label="Contact color legend">
+                  <span><i class="contact-swatch contact-swatch-current"></i> Current contact</span>
+                  <span><i class="contact-swatch contact-swatch-trail"></i> Recent trail</span>
+                  <span><i class="contact-swatch contact-swatch-body"></i> Body surface</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="contact-controls">
+              <button type="button" class="contact-play-button" data-contact-play>Play</button>
+              <input type="range" min="0" max="47" value="0" step="1" data-contact-slider
+                aria-label="Contact frame slider">
+              <output data-contact-output>Frame 1/48 | loading</output>
+            </div>
+
+            <div class="contact-timeline" data-contact-timeline aria-label="Contact area timeline"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="section section-tight" id="abstract">
     <div class="container is-max-desktop">
       <div class="columns is-centered">
@@ -597,7 +647,15 @@
     })();
   </script>
 
-  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=080808&w=300&t=n&d=yYpt2h_N333wb9nahCLesLoo-Es8gd0nPidLX18Iho0&co=ffffff&cmo=3acc3a&cmn=ff5353&ct=808080'></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
+  <script type="module" src="static/js/contact-evolution.js?v=20260423"></script>
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=080808&w=300&t=tt&d=yYpt2h_N333wb9nahCLesLoo-Es8gd0nPidLX18Iho0&co=ffffff&cmo=3acc3a&cmn=ff5353&ct=808080'></script>
 
 </body>
 
