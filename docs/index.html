@@ -516,9 +516,12 @@
       let activePage = 0;
       let syncTimer = 0;
 
+      function maxPage() {
+        return Math.max(0, Math.ceil(dots.length / pageSize) - 1);
+      }
+
       function clampPage(page) {
-        const maxPage = Math.max(0, Math.ceil(dots.length / pageSize) - 1);
-        return Math.max(0, Math.min(page, maxPage));
+        return Math.max(0, Math.min(page, maxPage()));
       }
 
       function updateTabPage() {
@@ -532,7 +535,7 @@
           previousPageButton.disabled = activePage === 0;
         }
         if (nextPageButton) {
-          nextPageButton.disabled = activePage >= clampPage(Number.POSITIVE_INFINITY);
+          nextPageButton.disabled = activePage >= maxPage();
         }
       }
 
