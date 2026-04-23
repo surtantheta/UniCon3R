@@ -164,7 +164,7 @@ if (root) {
     state.controls.dampingFactor = 0.08;
     state.controls.enablePan = false;
     state.controls.autoRotate = true;
-    state.controls.autoRotateSpeed = 0.7;
+    state.controls.autoRotateSpeed = 1.4;
     state.controls.target.set(0, 0, 0);
 
     window.addEventListener("resize", resizeViewer);
