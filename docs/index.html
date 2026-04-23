@@ -505,7 +505,7 @@
           videoCard.innerHTML = `
             <h4>Input Video</h4>
             <div class="sequence-media-box">
-              <video controls loop muted playsinline preload="metadata" data-sync-video>
+              <video controls loop muted playsinline preload="none" data-sync-video>
                 <source src="static/recordings/${config.id}/reference_10fps.mp4?v=${config.version}" type="video/mp4">
               </video>
             </div>
@@ -517,13 +517,8 @@
           viewerBox.className = "sequence-media-box";
           const iframe = document.createElement("iframe");
           iframe.title = `Interactive UniCon3R 4D reconstruction, ${config.title.toLowerCase()}`;
-          if (index === 0) {
-            iframe.src = viewerUrl(config);
-            iframe.loading = "eager";
-          } else {
-            iframe.dataset.src = viewerUrl(config);
-            iframe.loading = "lazy";
-          }
+          iframe.dataset.src = viewerUrl(config);
+          iframe.loading = "lazy";
           iframe.dataset.syncViewer = "";
           iframe.allowFullscreen = true;
           viewerBox.append(iframe);
@@ -544,6 +539,7 @@
       const pageSize = 5;
       let activeIndex = 0;
       let activePage = 0;
+      let carouselActivated = false;
       let syncTimer = 0;
 
       function maxPage() {
@@ -602,6 +598,13 @@
           video.playbackRate = getPlaybackRate(slide);
         }
         video?.load();
+      }
+
+      function preloadSlideVideo(slide) {
+        const video = slide.querySelector("[data-sync-video]");
+        if (!video || video.preload !== "none") return;
+        video.preload = "metadata";
+        video.load();
       }
 
       function startSyncedVideo(slide) {
@@ -713,7 +716,7 @@
       function preloadNextSlide(fromIndex) {
         if (slides.length < 2) return;
         const nextIndex = (fromIndex + 1) % slides.length;
-        const callback = () => ensureSlideAssets(slides[nextIndex]);
+        const callback = () => preloadSlideVideo(slides[nextIndex]);
         if ("requestIdleCallback" in window) {
           window.requestIdleCallback(callback, { timeout: 2500 });
         } else {
@@ -722,6 +725,7 @@
       }
 
       function showSlide(index) {
+        carouselActivated = true;
         activeIndex = (index + slides.length) % slides.length;
         slides.forEach((slide, slideIndex) => {
           const isActive = slideIndex === activeIndex;
@@ -785,7 +789,24 @@
         preloadNextSlide(slides.indexOf(slide));
       });
 
-      showSlide(0);
+      updateTabPage();
+      const activateCarousel = () => {
+        if (carouselActivated) return;
+        showSlide(activeIndex);
+      };
+      if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            if (!entries.some((entry) => entry.isIntersecting)) return;
+            observer.disconnect();
+            activateCarousel();
+          },
+          { rootMargin: "300px 0px" }
+        );
+        observer.observe(carousel);
+      } else {
+        window.setTimeout(activateCarousel, 1200);
+      }
     })();
   </script>
 
@@ -796,7 +817,36 @@
       }
     }
   </script>
-  <script type="module" src="static/js/contact-evolution.js?v=20260423-contact-rotate"></script>
+  <script>
+    (() => {
+      const contactRoot = document.querySelector("[data-contact-evolution]");
+      if (!contactRoot) return;
+
+      let loaded = false;
+      const loadContactEvolution = () => {
+        if (loaded) return;
+        loaded = true;
+        const script = document.createElement("script");
+        script.type = "module";
+        script.src = "static/js/contact-evolution.js?v=20260423-deferred-contact";
+        document.body.append(script);
+      };
+
+      if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            if (!entries.some((entry) => entry.isIntersecting)) return;
+            observer.disconnect();
+            loadContactEvolution();
+          },
+          { rootMargin: "500px 0px" }
+        );
+        observer.observe(contactRoot);
+      } else {
+        window.setTimeout(loadContactEvolution, 1800);
+      }
+    })();
+  </script>
   <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=080808&w=300&t=tt&d=yYpt2h_N333wb9nahCLesLoo-Es8gd0nPidLX18Iho0&co=ffffff&cmo=3acc3a&cmn=ff5353&ct=808080'></script>
 
 </body>

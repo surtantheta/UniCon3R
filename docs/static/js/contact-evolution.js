@@ -280,10 +280,18 @@ if (root) {
     state.activeSequence = index;
     state.activeFrame = 0;
     const sequence = state.sequences[index];
+    ui.play.disabled = true;
+    ui.status.hidden = false;
+    ui.status.textContent = `Loading ${sequence.title} contact frames...`;
     ui.slider.max = String(sequence.frames.length - 1);
     ui.slider.value = "0";
     buildTabs();
     applyContactFrame(0);
+    preloadFrameImages(sequence).then(() => {
+      if (state.sequences[state.activeSequence] !== sequence) return;
+      ui.play.disabled = false;
+      ui.status.hidden = true;
+    });
   }
 
   function stopPlayback() {
@@ -322,27 +330,27 @@ if (root) {
     });
   }
 
-  function preloadFrameImages(sequences) {
+  function preloadFrameImages(sequence) {
+    if (sequence.preloadPromise) return sequence.preloadPromise;
     const preloaders = [];
-    for (const sequence of sequences) {
-      for (const frame of sequence.frames) {
-        const image = new Image();
-        image.decoding = "async";
-        image.src = frame.image;
-        frame.imageElement = image;
-        if (image.decode) {
-          preloaders.push(image.decode().catch(() => undefined));
-        } else {
-          preloaders.push(
-            new Promise((resolve) => {
-              image.addEventListener("load", resolve, { once: true });
-              image.addEventListener("error", resolve, { once: true });
-            })
-          );
-        }
+    for (const frame of sequence.frames) {
+      const image = new Image();
+      image.decoding = "async";
+      image.src = frame.image;
+      frame.imageElement = image;
+      if (image.decode) {
+        preloaders.push(image.decode().catch(() => undefined));
+      } else {
+        preloaders.push(
+          new Promise((resolve) => {
+            image.addEventListener("load", resolve, { once: true });
+            image.addEventListener("error", resolve, { once: true });
+          })
+        );
       }
     }
-    return Promise.all(preloaders);
+    sequence.preloadPromise = Promise.all(preloaders);
+    return sequence.preloadPromise;
   }
 
   async function main() {
@@ -353,14 +361,10 @@ if (root) {
           fetch(sequence.path).then((response) => response.json())
         ),
       ]);
-      ui.status.textContent = "Preparing temporal contact playback...";
-      await preloadFrameImages(sequences);
       state.sequences = sequences;
       setupViewer(parseObj(meshText));
       setupEvents();
       selectSequence(0);
-      ui.play.disabled = false;
-      ui.status.hidden = true;
     } catch (error) {
       console.error(error);
       ui.status.textContent = "Could not load temporal contact assets.";
