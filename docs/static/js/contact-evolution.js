@@ -29,14 +29,14 @@ if (root) {
     slider: root.querySelector("[data-contact-slider]"),
     play: root.querySelector("[data-contact-play]"),
     output: root.querySelector("[data-contact-output]"),
-    timeline: root.querySelector("[data-contact-timeline]"),
   };
 
   const colors = {
     base: [0.79, 0.80, 0.80],
     current: [0.0, 0.82, 0.95],
-    trail: [0.12, 0.37, 0.92],
   };
+
+  ui.play.disabled = true;
 
   const state = {
     sequences: [],
@@ -50,7 +50,6 @@ if (root) {
     controls: null,
     mesh: null,
     colorBuffer: null,
-    timelineBars: [],
   };
 
   function parseObj(text) {
@@ -180,16 +179,6 @@ if (root) {
       state.colorBuffer[i + 2] = colors.base[2];
     }
 
-    const trailLength = 5;
-    for (let i = trailLength; i >= 1; i -= 1) {
-      const trailFrame = frames[clampedIndex - i];
-      if (!trailFrame) continue;
-      const alpha = 0.16 + ((trailLength - i) / trailLength) * 0.42;
-      for (const vertexIndex of trailFrame.contactIndices) {
-        setVertexColor(vertexIndex, colors.trail, alpha);
-      }
-    }
-
     const frame = frames[clampedIndex];
     for (const vertexIndex of frame.contactIndices) {
       setVertexColor(vertexIndex, colors.current, 1);
@@ -200,14 +189,11 @@ if (root) {
 
   function updateUi(frame, frameIndex) {
     const sequence = state.sequences[state.activeSequence];
-    ui.image.src = frame.image;
-    ui.image.alt = `${sequence.title} reference frame ${frame.sourceFrame}`;
+    ui.image.src = frame.imageElement?.src || frame.image;
+    ui.image.alt = `${sequence.title} input frame ${frame.sourceFrame}`;
     ui.imageCaption.textContent = `Source frame ${frame.sourceFrame} at ${frame.timeSeconds.toFixed(2)}s`;
     ui.slider.value = String(frameIndex);
     ui.output.textContent = `Frame ${frameIndex + 1}/${sequence.frames.length} | ${frame.contactCount} contact vertices`;
-    state.timelineBars.forEach((bar, index) => {
-      bar.classList.toggle("is-active", index === frameIndex);
-    });
   }
 
   function buildTabs() {
@@ -222,25 +208,6 @@ if (root) {
     });
   }
 
-  function buildTimeline(sequence) {
-    ui.timeline.replaceChildren();
-    state.timelineBars = [];
-    const maxCount = Math.max(...sequence.frames.map((frame) => frame.contactCount), 1);
-    sequence.frames.forEach((frame, index) => {
-      const bar = document.createElement("button");
-      bar.type = "button";
-      bar.className = "contact-timeline-bar";
-      bar.style.setProperty("--bar-height", `${Math.max(8, (frame.contactCount / maxCount) * 100)}%`);
-      bar.title = `Frame ${index + 1}: ${frame.contactCount} contact vertices`;
-      bar.addEventListener("click", () => {
-        stopPlayback();
-        applyContactFrame(index);
-      });
-      ui.timeline.append(bar);
-      state.timelineBars.push(bar);
-    });
-  }
-
   function selectSequence(index) {
     stopPlayback();
     state.activeSequence = index;
@@ -249,7 +216,6 @@ if (root) {
     ui.slider.max = String(sequence.frames.length - 1);
     ui.slider.value = "0";
     buildTabs();
-    buildTimeline(sequence);
     applyContactFrame(0);
   }
 
@@ -263,10 +229,12 @@ if (root) {
   }
 
   function startPlayback() {
+    if (state.playing) return;
     state.playing = true;
     ui.play.textContent = "Pause";
+    const sequence = state.sequences[state.activeSequence];
+    applyContactFrame((state.activeFrame + 1) % sequence.frames.length);
     state.playTimer = window.setInterval(() => {
-      const sequence = state.sequences[state.activeSequence];
       const nextFrame = (state.activeFrame + 1) % sequence.frames.length;
       applyContactFrame(nextFrame);
     }, 180);
@@ -287,6 +255,29 @@ if (root) {
     });
   }
 
+  function preloadFrameImages(sequences) {
+    const preloaders = [];
+    for (const sequence of sequences) {
+      for (const frame of sequence.frames) {
+        const image = new Image();
+        image.decoding = "async";
+        image.src = frame.image;
+        frame.imageElement = image;
+        if (image.decode) {
+          preloaders.push(image.decode().catch(() => undefined));
+        } else {
+          preloaders.push(
+            new Promise((resolve) => {
+              image.addEventListener("load", resolve, { once: true });
+              image.addEventListener("error", resolve, { once: true });
+            })
+          );
+        }
+      }
+    }
+    return Promise.all(preloaders);
+  }
+
   async function main() {
     try {
       const [meshText, ...sequences] = await Promise.all([
@@ -295,10 +286,13 @@ if (root) {
           fetch(sequence.path).then((response) => response.json())
         ),
       ]);
+      ui.status.textContent = "Preparing temporal contact playback...";
+      await preloadFrameImages(sequences);
       state.sequences = sequences;
       setupViewer(parseObj(meshText));
       setupEvents();
       selectSequence(0);
+      ui.play.disabled = false;
       ui.status.hidden = true;
     } catch (error) {
       console.error(error);

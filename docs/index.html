@@ -129,8 +129,12 @@
           </div>
 
           <div class="sequence-carousel" data-sequence-carousel>
-            <button class="sequence-nav sequence-nav-prev" type="button" aria-label="Previous sequence"
-              data-sequence-prev>&lsaquo;</button>
+            <div class="sequence-tabs" aria-label="Sequence selector">
+              <button class="is-active" type="button" data-sequence-dot>Sequence 1</button>
+              <button type="button" data-sequence-dot>Sequence 2</button>
+              <button type="button" data-sequence-dot>Sequence 3</button>
+              <button type="button" data-sequence-dot>Sequence 4</button>
+            </div>
 
             <div class="sequence-slides">
               <article class="sequence-slide is-active" data-sequence-slide>
@@ -246,16 +250,6 @@
                 </div>
               </article>
             </div>
-
-            <button class="sequence-nav sequence-nav-next" type="button" aria-label="Next sequence"
-              data-sequence-next>&rsaquo;</button>
-
-            <div class="sequence-dots" aria-label="Sequence selector">
-              <button class="is-active" type="button" aria-label="Show sequence 1" data-sequence-dot></button>
-              <button type="button" aria-label="Show sequence 2" data-sequence-dot></button>
-              <button type="button" aria-label="Show sequence 3" data-sequence-dot></button>
-              <button type="button" aria-label="Show sequence 4" data-sequence-dot></button>
-            </div>
           </div>
 
         </div>
@@ -268,32 +262,27 @@
       <div class="columns is-centered">
         <div class="column is-full">
           <h2 class="title is-3 has-text-centered">Temporal Contact Evolution</h2>
-          <p class="section-intro has-text-centered">
-            UniCon3R predicts dense human-scene contact over time. We visualize frame-wise contact on a canonical
-            T-pose body: cyan marks the current frame and blue shows the recent contact trail.
-          </p>
 
           <div class="contact-evolution" data-contact-evolution>
             <div class="contact-tabs" data-contact-tabs aria-label="Contact sequence selector"></div>
 
             <div class="contact-evolution-grid">
               <div class="contact-card contact-reference-card">
-                <h3 class="title is-5">Reference Frame</h3>
+                <h3 class="title is-5">Input Video</h3>
                 <div class="contact-reference-frame">
-                  <img data-contact-image src="static/contact/vid8/frames/000.jpg" alt="Reference frame for contact visualization">
+                  <img data-contact-image src="static/contact/vid8/frames/000.jpg" alt="Input frame for contact visualization">
                 </div>
                 <p class="contact-frame-caption" data-contact-image-caption>Source frame 0 at 0.00s</p>
               </div>
 
               <div class="contact-card contact-viewer-card">
-                <h3 class="title is-5">Canonical T-pose Contact</h3>
+                <h3 class="title is-5">Results</h3>
                 <div class="contact-viewer-frame">
                   <canvas data-contact-canvas aria-label="Temporal T-pose contact viewer"></canvas>
                   <div class="contact-status" data-contact-status>Loading temporal contact viewer...</div>
                 </div>
                 <div class="contact-legend" aria-label="Contact color legend">
                   <span><i class="contact-swatch contact-swatch-current"></i> Current contact</span>
-                  <span><i class="contact-swatch contact-swatch-trail"></i> Recent trail</span>
                   <span><i class="contact-swatch contact-swatch-body"></i> Body surface</span>
                 </div>
               </div>
@@ -305,8 +294,6 @@
                 aria-label="Contact frame slider">
               <output data-contact-output>Frame 1/48 | loading</output>
             </div>
-
-            <div class="contact-timeline" data-contact-timeline aria-label="Contact area timeline"></div>
           </div>
         </div>
       </div>
@@ -431,8 +418,6 @@
 
       const slides = Array.from(carousel.querySelectorAll("[data-sequence-slide]"));
       const dots = Array.from(carousel.querySelectorAll("[data-sequence-dot]"));
-      const previous = carousel.querySelector("[data-sequence-prev]");
-      const next = carousel.querySelector("[data-sequence-next]");
       let activeIndex = 0;
       let syncTimer = 0;
 
@@ -606,8 +591,6 @@
         startSyncTimer();
       }
 
-      previous?.addEventListener("click", () => showSlide(activeIndex - 1));
-      next?.addEventListener("click", () => showSlide(activeIndex + 1));
       dots.forEach((dot, dotIndex) => {
         dot.addEventListener("click", () => showSlide(dotIndex));
       });
@@ -654,7 +637,7 @@
       }
     }
   </script>
-  <script type="module" src="static/js/contact-evolution.js?v=20260423"></script>
+  <script type="module" src="static/js/contact-evolution.js?v=20260423-sync2"></script>
   <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=080808&w=300&t=tt&d=yYpt2h_N333wb9nahCLesLoo-Es8gd0nPidLX18Iho0&co=ffffff&cmo=3acc3a&cmn=ff5353&ct=808080'></script>
 
 </body>
