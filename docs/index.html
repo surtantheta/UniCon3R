@@ -151,7 +151,7 @@
                     <div class="sequence-media-box">
                       <iframe
                         title="Interactive UniCon3R 4D reconstruction, sequence 1"
-                        src="static/viser/?playbackPath=..%2Frecordings%2Fvid4%2Freconstruction.viser%3Fv%3Dgray-cyan-points50&amp;initialCameraPosition=0.300705,-0.450101,-1.999547&amp;initialCameraLookAt=0.000215,0.000392,3.500386&amp;initialCameraUp=-0.000078,-1,0.000085"
+                        src="static/viser/?playbackPath=..%2Frecordings%2Fvid4%2Freconstruction.viser%3Fv%3Dsync-v2-points50&amp;initialCameraPosition=0.300705,-0.450101,-1.999547&amp;initialCameraLookAt=0.000215,0.000392,3.500386&amp;initialCameraUp=-0.000078,-1,0.000085&amp;paused=1"
                         loading="eager"
                         data-sync-viewer
                         allowfullscreen>
@@ -179,7 +179,7 @@
                     <div class="sequence-media-box">
                       <iframe
                         title="Interactive UniCon3R 4D reconstruction, sequence 2"
-                        data-src="static/viser/?playbackPath=..%2Frecordings%2Fvid12%2Freconstruction.viser%3Fv%3Dgray-cyan-points50&amp;initialCameraPosition=0.301169,-0.449876,-1.999851&amp;initialCameraLookAt=-0.001132,0.000417,3.499998&amp;initialCameraUp=-0.000196,-1,0.000043"
+                        data-src="static/viser/?playbackPath=..%2Frecordings%2Fvid12%2Freconstruction.viser%3Fv%3Dsync-v2-points50&amp;initialCameraPosition=0.301169,-0.449876,-1.999851&amp;initialCameraLookAt=-0.001132,0.000417,3.499998&amp;initialCameraUp=-0.000196,-1,0.000043&amp;paused=1"
                         loading="lazy"
                         data-sync-viewer
                         allowfullscreen>
@@ -189,7 +189,8 @@
                 </div>
               </article>
 
-              <article class="sequence-slide" data-sequence-slide aria-hidden="true">
+              <article class="sequence-slide" data-sequence-slide data-playback-rate="0.5" data-viewer-speed="0.5x"
+                aria-hidden="true">
                 <div class="sequence-slide-header">
                   <h3 class="title is-5">Sequence 3</h3>
                 </div>
@@ -198,7 +199,7 @@
                     <h4>Input Video</h4>
                     <div class="sequence-media-box">
                       <video controls loop muted playsinline preload="metadata" data-sync-video>
-                        <source src="static/recordings/vid3/reference_10fps.mp4?v=web-optimized-20260423" type="video/mp4">
+                        <source src="static/recordings/vid3/reference_10fps.mp4?v=trim6-sync-v2-20260423" type="video/mp4">
                       </video>
                     </div>
                   </div>
@@ -207,7 +208,7 @@
                     <div class="sequence-media-box">
                       <iframe
                         title="Interactive UniCon3R 4D reconstruction, sequence 3"
-                        data-src="static/viser/?playbackPath=..%2Frecordings%2Fvid3%2Freconstruction.viser%3Fv%3Dgray-cyan-points50&amp;initialCameraPosition=0.30113,-0.449974,-1.999652&amp;initialCameraLookAt=-0.000399,0.000487,3.500227&amp;initialCameraUp=-0.000115,-1,0.000077"
+                        data-src="static/viser/?playbackPath=..%2Frecordings%2Fvid3%2Freconstruction.viser%3Fv%3Dsync-v2-6sec-points50&amp;initialCameraPosition=0.30113,-0.449974,-1.999652&amp;initialCameraLookAt=-0.000399,0.000487,3.500227&amp;initialCameraUp=-0.000115,-1,0.000077&amp;paused=1&amp;playbackSpeed=0.5x"
                         loading="lazy"
                         data-sync-viewer
                         allowfullscreen>
@@ -354,6 +355,27 @@
       const previous = carousel.querySelector("[data-sequence-prev]");
       const next = carousel.querySelector("[data-sequence-next]");
       let activeIndex = 0;
+      let syncTimer = 0;
+
+      function getPlaybackRate(slide) {
+        const rate = Number.parseFloat(slide.dataset.playbackRate || "1");
+        return Number.isFinite(rate) && rate > 0 ? rate : 1;
+      }
+
+      function getViewerSpeed(slide) {
+        return slide.dataset.viewerSpeed || `${getPlaybackRate(slide)}x`;
+      }
+
+      function postViewerControl(slide, payload) {
+        const iframe = slide.querySelector("[data-sync-viewer]");
+        iframe?.contentWindow?.postMessage(
+          {
+            type: "unicon3r-viser-control",
+            ...payload,
+          },
+          "*"
+        );
+      }
 
       function ensureSlideAssets(slide) {
         const iframe = slide.querySelector("[data-sync-viewer]");
@@ -364,16 +386,116 @@
         if (video?.preload === "none") {
           video.preload = "metadata";
         }
+        if (video) {
+          video.playbackRate = getPlaybackRate(slide);
+        }
         video?.load();
       }
 
       function startSyncedVideo(slide) {
         const video = slide.querySelector("[data-sync-video]");
         if (!video || slide.dataset.viewerReady !== "true" || slides[activeIndex] !== slide) return;
+        video.playbackRate = getPlaybackRate(slide);
         video.currentTime = 0;
-        video.play().catch(() => {
-          // Autoplay can still be blocked by some browsers; controls remain available.
+        postViewerControl(slide, {
+          currentTime: 0,
+          paused: true,
+          speed: getViewerSpeed(slide),
         });
+        const playPromise = video.play();
+        const startViewer = () => {
+          if (slides[activeIndex] !== slide || video.paused) return;
+          postViewerControl(slide, {
+            currentTime: video.currentTime,
+            paused: false,
+            speed: getViewerSpeed(slide),
+          });
+        };
+        if (playPromise?.then) {
+          playPromise.then(startViewer).catch(() => {
+            // Autoplay can still be blocked by some browsers; controls remain available.
+          });
+        } else {
+          startViewer();
+        }
+      }
+
+      function pauseSlide(slide) {
+        slide.querySelector("[data-sync-video]")?.pause();
+        postViewerControl(slide, { paused: true });
+      }
+
+      function syncActiveSlide() {
+        const slide = slides[activeIndex];
+        const video = slide?.querySelector("[data-sync-video]");
+        if (!slide || !video || slide.dataset.viewerReady !== "true") return;
+        postViewerControl(slide, {
+          currentTime: video.currentTime,
+          paused: video.paused || video.readyState < HTMLMediaElement.HAVE_FUTURE_DATA,
+          speed: getViewerSpeed(slide),
+        });
+      }
+
+      function handleVideoBuffering(slide) {
+        if (slides[activeIndex] !== slide) return;
+        postViewerControl(slide, { paused: true });
+      }
+
+      function handleVideoPlaying(slide) {
+        if (slides[activeIndex] !== slide || slide.dataset.viewerReady !== "true") return;
+        const video = slide.querySelector("[data-sync-video]");
+        if (!video) return;
+        video.playbackRate = getPlaybackRate(slide);
+        postViewerControl(slide, {
+          currentTime: video.currentTime,
+          paused: false,
+          speed: getViewerSpeed(slide),
+        });
+      }
+
+      function handleVideoTimeUpdate(slide) {
+        if (slides[activeIndex] !== slide || slide.dataset.viewerReady !== "true") return;
+        const video = slide.querySelector("[data-sync-video]");
+        if (!video) return;
+        const previousTime = Number.parseFloat(slide.dataset.lastVideoTime || "0");
+        const now = performance.now();
+        const looped = video.currentTime + 0.25 < previousTime;
+        const due = now - Number.parseFloat(slide.dataset.lastSyncTime || "0") > 2000;
+        slide.dataset.lastVideoTime = String(video.currentTime);
+        if (!looped && !due) return;
+        slide.dataset.lastSyncTime = String(now);
+        postViewerControl(slide, {
+          currentTime: video.currentTime,
+          paused: video.paused,
+          speed: getViewerSpeed(slide),
+        });
+      }
+
+      function handleVideoPause(slide) {
+        if (slides[activeIndex] !== slide) return;
+        postViewerControl(slide, { paused: true });
+      }
+
+      function handleVideoSeeked(slide) {
+        if (slides[activeIndex] !== slide || slide.dataset.viewerReady !== "true") return;
+        const video = slide.querySelector("[data-sync-video]");
+        if (!video) return;
+        postViewerControl(slide, {
+          currentTime: video.currentTime,
+          paused: video.paused,
+          speed: getViewerSpeed(slide),
+        });
+      }
+
+      function clearSyncTimer() {
+        if (!syncTimer) return;
+        window.clearInterval(syncTimer);
+        syncTimer = 0;
+      }
+
+      function startSyncTimer() {
+        clearSyncTimer();
+        syncTimer = window.setInterval(syncActiveSlide, 1500);
       }
 
       function preloadNextSlide(fromIndex) {
@@ -394,7 +516,7 @@
           slide.classList.toggle("is-active", isActive);
           slide.setAttribute("aria-hidden", isActive ? "false" : "true");
           if (!isActive) {
-            slide.querySelector("[data-sync-video]")?.pause();
+            pauseSlide(slide);
           }
         });
         dots.forEach((dot, dotIndex) => {
@@ -402,6 +524,7 @@
         });
         ensureSlideAssets(slides[activeIndex]);
         startSyncedVideo(slides[activeIndex]);
+        startSyncTimer();
       }
 
       previous?.addEventListener("click", () => showSlide(activeIndex - 1));
@@ -413,7 +536,19 @@
       slides.forEach((slide) => {
         slide.dataset.viewerReady = "false";
         const video = slide.querySelector("[data-sync-video]");
-        video?.pause();
+        if (!video) return;
+        video.playbackRate = getPlaybackRate(slide);
+        video.addEventListener("waiting", () => handleVideoBuffering(slide));
+        video.addEventListener("stalled", () => handleVideoBuffering(slide));
+        video.addEventListener("seeking", () => handleVideoBuffering(slide));
+        video.addEventListener("playing", () => handleVideoPlaying(slide));
+        video.addEventListener("canplay", () => {
+          if (!video.paused) handleVideoPlaying(slide);
+        });
+        video.addEventListener("timeupdate", () => handleVideoTimeUpdate(slide));
+        video.addEventListener("pause", () => handleVideoPause(slide));
+        video.addEventListener("seeked", () => handleVideoSeeked(slide));
+        video.pause();
       });
 
       window.addEventListener("message", (event) => {
