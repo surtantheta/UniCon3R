@@ -429,6 +429,7 @@ p,
 .sequence-tabs,
 .contact-tabs {
   display: flex;
+  align-items: center;
   justify-content: center;
   gap: 10px;
   margin-bottom: 1rem;
@@ -438,9 +439,17 @@ p,
   margin-top: 1.25rem;
 }
 
+.sequence-tab-page,
+.contact-tab-page {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
 .sequence-tabs button,
 .contact-tabs button,
 .contact-play-button {
+  min-width: 110px;
   padding: 7px 18px;
   color: #224b8d;
   background: #fff;
@@ -450,6 +459,26 @@ p,
   font: inherit;
   font-size: 15px;
   font-weight: 700;
+  white-space: nowrap;
+}
+
+.sequence-tabs .sequence-page-arrow,
+.contact-tabs .contact-page-arrow {
+  min-width: 38px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  color: #224b8d;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.sequence-tabs .sequence-page-arrow:disabled,
+.contact-tabs .contact-page-arrow:disabled {
+  color: #95a4bd;
+  cursor: not-allowed;
+  background: #f8f9fb;
+  border-color: #d9dee8;
 }
 
 .sequence-tabs button.is-active,
@@ -736,6 +765,27 @@ p,
 
   .sequence-carousel {
     padding: 0;
+  }
+
+  .sequence-tabs,
+  .contact-tabs,
+  .sequence-tab-page,
+  .contact-tab-page {
+    gap: 6px;
+  }
+
+  .sequence-tabs button,
+  .contact-tabs button {
+    min-width: 0;
+    padding: 7px 12px;
+    font-size: 14px;
+  }
+
+  .sequence-tabs .sequence-page-arrow,
+  .contact-tabs .contact-page-arrow {
+    min-width: 34px;
+    width: 34px;
+    height: 34px;
   }
 
   .sequence-slide-header {

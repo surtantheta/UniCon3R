@@ -25,7 +25,7 @@
   <link rel="icon" type="image/png" href="static/images/unicon3r_icon.png">
   <link rel="apple-touch-icon" href="static/images/unicon3r_icon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-  <link rel="stylesheet" href="static/css/index.css">
+  <link rel="stylesheet" href="static/css/index.css?v=20260423-paged-tabs">
 </head>
 
 <body>
@@ -419,13 +419,32 @@
       function renderSequenceCarousel() {
         const tabContainer = carousel.querySelector("[data-sequence-tabs]");
         const slideContainer = carousel.querySelector("[data-sequence-slides]");
+        const previousPageButton = document.createElement("button");
+        previousPageButton.type = "button";
+        previousPageButton.className = "sequence-page-arrow";
+        previousPageButton.dataset.sequencePagePrevious = "";
+        previousPageButton.setAttribute("aria-label", "Show previous sequence group");
+        previousPageButton.textContent = "‹";
+
+        const tabPage = document.createElement("div");
+        tabPage.className = "sequence-tab-page";
+
+        const nextPageButton = document.createElement("button");
+        nextPageButton.type = "button";
+        nextPageButton.className = "sequence-page-arrow";
+        nextPageButton.dataset.sequencePageNext = "";
+        nextPageButton.setAttribute("aria-label", "Show next sequence group");
+        nextPageButton.textContent = "›";
+
+        tabContainer.append(previousPageButton, tabPage, nextPageButton);
+
         sequenceConfigs.forEach((config, index) => {
           const button = document.createElement("button");
           button.type = "button";
           button.dataset.sequenceDot = "";
           button.textContent = config.title;
           if (index === 0) button.classList.add("is-active");
-          tabContainer.append(button);
+          tabPage.append(button);
 
           const article = document.createElement("article");
           article.className = "sequence-slide";
@@ -490,8 +509,32 @@
       renderSequenceCarousel();
       const slides = Array.from(carousel.querySelectorAll("[data-sequence-slide]"));
       const dots = Array.from(carousel.querySelectorAll("[data-sequence-dot]"));
+      const previousPageButton = carousel.querySelector("[data-sequence-page-previous]");
+      const nextPageButton = carousel.querySelector("[data-sequence-page-next]");
+      const pageSize = 5;
       let activeIndex = 0;
+      let activePage = 0;
       let syncTimer = 0;
+
+      function clampPage(page) {
+        const maxPage = Math.max(0, Math.ceil(dots.length / pageSize) - 1);
+        return Math.max(0, Math.min(page, maxPage));
+      }
+
+      function updateTabPage() {
+        activePage = clampPage(Math.floor(activeIndex / pageSize));
+        const start = activePage * pageSize;
+        const end = start + pageSize;
+        dots.forEach((dot, dotIndex) => {
+          dot.hidden = dotIndex < start || dotIndex >= end;
+        });
+        if (previousPageButton) {
+          previousPageButton.disabled = activePage === 0;
+        }
+        if (nextPageButton) {
+          nextPageButton.disabled = activePage >= clampPage(Number.POSITIVE_INFINITY);
+        }
+      }
 
       function getPlaybackRate(slide) {
         const rate = Number.parseFloat(slide.dataset.playbackRate || "1");
@@ -658,6 +701,7 @@
         dots.forEach((dot, dotIndex) => {
           dot.classList.toggle("is-active", dotIndex === activeIndex);
         });
+        updateTabPage();
         ensureSlideAssets(slides[activeIndex]);
         startSyncedVideo(slides[activeIndex]);
         startSyncTimer();
@@ -665,6 +709,16 @@
 
       dots.forEach((dot, dotIndex) => {
         dot.addEventListener("click", () => showSlide(dotIndex));
+      });
+
+      previousPageButton?.addEventListener("click", () => {
+        const page = clampPage(activePage - 1);
+        showSlide(page * pageSize);
+      });
+
+      nextPageButton?.addEventListener("click", () => {
+        const page = clampPage(activePage + 1);
+        showSlide(page * pageSize);
       });
 
       slides.forEach((slide) => {
@@ -709,7 +763,7 @@
       }
     }
   </script>
-  <script type="module" src="static/js/contact-evolution.js?v=20260423-emdb-contact"></script>
+  <script type="module" src="static/js/contact-evolution.js?v=20260423-paged-tabs"></script>
   <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=080808&w=300&t=tt&d=yYpt2h_N333wb9nahCLesLoo-Es8gd0nPidLX18Iho0&co=ffffff&cmo=3acc3a&cmn=ff5353&ct=808080'></script>
 
 </body>

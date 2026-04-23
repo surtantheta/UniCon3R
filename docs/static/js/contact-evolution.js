@@ -71,6 +71,8 @@ if (root) {
     sequences: [],
     activeSequence: 0,
     activeFrame: 0,
+    activePage: 0,
+    pageSize: 5,
     playing: false,
     playTimer: 0,
     renderer: null,
@@ -226,14 +228,51 @@ if (root) {
 
   function buildTabs() {
     ui.tabs.replaceChildren();
-    state.sequences.forEach((sequence, index) => {
+
+    const maxPage = Math.max(0, Math.ceil(state.sequences.length / state.pageSize) - 1);
+    state.activePage = Math.max(
+      0,
+      Math.min(Math.floor(state.activeSequence / state.pageSize), maxPage)
+    );
+    const start = state.activePage * state.pageSize;
+    const end = Math.min(start + state.pageSize, state.sequences.length);
+
+    const previousPageButton = document.createElement("button");
+    previousPageButton.type = "button";
+    previousPageButton.className = "contact-page-arrow";
+    previousPageButton.textContent = "‹";
+    previousPageButton.disabled = state.activePage === 0;
+    previousPageButton.setAttribute("aria-label", "Show previous contact sequence group");
+    previousPageButton.addEventListener("click", () => {
+      const page = Math.max(0, state.activePage - 1);
+      selectSequence(page * state.pageSize);
+    });
+
+    const tabPage = document.createElement("div");
+    tabPage.className = "contact-tab-page";
+
+    const nextPageButton = document.createElement("button");
+    nextPageButton.type = "button";
+    nextPageButton.className = "contact-page-arrow";
+    nextPageButton.textContent = "›";
+    nextPageButton.disabled = state.activePage >= maxPage;
+    nextPageButton.setAttribute("aria-label", "Show next contact sequence group");
+    nextPageButton.addEventListener("click", () => {
+      const page = Math.min(maxPage, state.activePage + 1);
+      selectSequence(page * state.pageSize);
+    });
+
+    for (let index = start; index < end; index += 1) {
+      const sequence = state.sequences[index];
       const button = document.createElement("button");
       button.type = "button";
       button.textContent = sequence.title;
       button.className = index === state.activeSequence ? "is-active" : "";
       button.addEventListener("click", () => selectSequence(index));
-      ui.tabs.append(button);
-    });
+      tabPage.append(button);
+    }
+
+    ui.tabs.append(previousPageButton, tabPage, nextPageButton);
   }
 
   function selectSequence(index) {
