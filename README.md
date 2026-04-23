@@ -16,10 +16,9 @@
 </p>
 
 <p align="center">
-  <a href="https://surtantheta.github.io/UniCon3R/"><b>Project Page</b></a> |
-  <b>Paper Soon</b> |
-  <b>arXiv Soon</b> |
-  <a href="https://github.com/surtantheta/UniCon3R"><b>Code (Coming Soon)</b></a>
+  <a href="https://arxiv.org/abs/2604.19923"><img src="https://img.shields.io/badge/Arxiv-2604.19923-b31b1b.svg?logo=arXiv" alt="arXiv"></a>
+  <a href="https://surtantheta.github.io/UniCon3R/"><img src="https://img.shields.io/badge/Project-Website-C27185.svg" alt="Project Website"></a>
+  <a href="https://github.com/surtantheta/UniCon3R"><img src="https://img.shields.io/badge/Code-GitHub-black.svg?logo=github" alt="Code"></a>
 </p>
 
 <p align="center">
@@ -44,8 +43,8 @@
 ## Release Status
 
 - Project page and interactive 4D visualizations are available now.
+- Paper is available on [arXiv](https://arxiv.org/abs/2604.19923).
 - **Code, checkpoints, installation instructions, and inference scripts will be released soon in this repository.**
-- Paper and arXiv links will be added once available.
 
 ## Method Overview
 
@@ -81,7 +80,14 @@ The public code release is in preparation. This section will be updated with:
 
 ## Citation
 
-BibTeX will be added with the paper/arXiv release.
+```bibtex
+@article{sur2026unicon3r,
+  title={UniCon3R: Contact-aware 3D Human-Scene Reconstruction from Monocular Video},
+  author={Sur, Tanuj and Tripathi, Shashank and Athanasiou, Nikos and Nguyen, Ha Linh and Xu, Kai and Black, Michael J. and Yao, Angela},
+  journal={arXiv preprint arXiv:2604.19923},
+  year={2026}
+}
+```
 
 ## Acknowledgements
 
