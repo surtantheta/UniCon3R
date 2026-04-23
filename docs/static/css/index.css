@@ -188,6 +188,23 @@ p,
   margin-top: 1rem;
 }
 
+.bibtex-block {
+  padding: 1rem;
+  overflow-x: auto;
+  color: #111;
+  background: #f7f7f7;
+  border: 1px solid #d7d7d7;
+  border-radius: 0.5em;
+  font-size: 13.5px;
+  line-height: 1.45;
+  text-align: left;
+  white-space: pre;
+}
+
+.acknowledgement-copy {
+  margin: 0;
+}
+
 .media-frame {
   margin: 0 auto 1rem;
   overflow: visible;

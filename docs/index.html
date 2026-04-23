@@ -25,7 +25,7 @@
   <link rel="icon" type="image/png" href="static/images/unicon3r_icon.png">
   <link rel="apple-touch-icon" href="static/images/unicon3r_icon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-  <link rel="stylesheet" href="static/css/index.css?v=20260423-paged-tabs">
+  <link rel="stylesheet" href="static/css/index.css?v=20260423-abstract-bibtex">
 </head>
 
 <body>
@@ -71,8 +71,30 @@
                     rel="noopener noreferrer">arXiv</a>]</span>
               <span>[<a href="https://github.com/surtantheta/UniCon3R" target="_blank"
                     rel="noopener noreferrer">Code</a>]</span>
+              <span>[<a href="#bibtex">BibTeX</a>]</span>
             </p>
 
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight" id="abstract">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3 has-text-centered">Abstract</h2>
+          <div class="content has-text-justified paper-copy">
+            <p>
+              <strong>UniCon3R</strong> is a feed-forward framework for online human-scene 4D reconstruction from
+              monocular video. Existing reconstruction methods recover motion and scene geometry, but often miss the
+              physical interaction between people and their surroundings, leading to floating bodies, penetration, and
+              unstable scene alignment. UniCon3R treats human-scene contact as an internal corrective prior: it infers
+              3D contact from pose and scene geometry, then feeds this interaction cue back into the human branch to
+              refine the final reconstruction. This produces spatially aligned humans and scene geometry while showing
+              that contact is not only an evaluation signal, but a mechanism for physically grounded reconstruction.
+            </p>
           </div>
         </div>
       </div>
@@ -181,35 +203,6 @@
     </div>
   </section>
 
-  <section class="section section-tight" id="abstract">
-    <div class="container is-max-desktop">
-      <div class="columns is-centered">
-        <div class="column is-four-fifths">
-          <h2 class="title is-3 has-text-centered">Abstract</h2>
-          <div class="content has-text-justified paper-copy">
-            <p>
-              We introduce <strong>UniCon3R</strong> (<strong>Uni</strong>fied <strong>Con</strong>tact-aware
-              <strong>3</strong>D <strong>R</strong>econstruction), a unified feed-forward framework for online
-              human-scene 4D reconstruction from monocular videos. Recent feed-forward methods enable real-time
-              world-coordinate human motion and scene reconstruction, but they often produce physically implausible
-              artifacts such as bodies floating above the ground or penetrating parts of the scene. The key reason is
-              that existing approaches fail to model physical interactions between the human and the environment. A
-              natural next step is to predict human-scene contact as an auxiliary output, yet we find this alone is not
-              sufficient: contact must actively correct the reconstruction. To address this, we explicitly model
-              interaction by inferring 3D contact from the human pose and scene geometry and use the contact as a
-              corrective cue for generating the final pose. This enables UniCon3R to jointly recover high-fidelity scene
-              geometry and spatially aligned 3D humans within the scene. Experiments on standard human-centric video
-              benchmarks such as RICH, EMDB, 3DPW and SLOPER4D show that UniCon3R outperforms state-of-the-art baselines
-              on physical plausibility and global human motion estimation while achieving real-time online inference. We
-              experimentally demonstrate that contact serves as a powerful internal prior rather than just an external
-              metric, thus establishing a new paradigm for physically grounded joint human-scene reconstruction.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <section class="section section-tight" id="method">
     <div class="container is-max-widescreen">
       <div class="columns is-centered">
@@ -287,6 +280,43 @@
           <div class="media-frame">
             <img src="static/images/local_mesh.png" alt="Local mesh reconstruction comparison" loading="lazy">
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight" id="bibtex">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3 has-text-centered">BibTeX</h2>
+          <pre class="bibtex-block"><code>@misc{sur2026unicon3rcontactaware3dhumanscene,
+      title={UniCon3R: Contact-aware 3D Human-Scene Reconstruction from Monocular Video},
+      author={Tanuj Sur and Shashank Tripathi and Nikos Athanasiou and Ha Linh Nguyen and Kai Xu and Michael J. Black and Angela Yao},
+      year={2026},
+      eprint={2604.19923},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2604.19923},
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight" id="acknowledgements">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3 has-text-centered">Acknowledgements</h2>
+          <p class="acknowledgement-copy">
+            We thank the authors of <a href="https://st4rtrack.github.io/" target="_blank"
+              rel="noopener noreferrer">ST4RTrack</a> for the public project-page structure, which follows
+            <a href="https://sd-complements-dino.github.io/" target="_blank" rel="noopener noreferrer">SD+DINO</a> and
+            <a href="https://dreambooth.github.io/" target="_blank" rel="noopener noreferrer">DreamBooth</a>. The
+            interactive 4D visualization on this page is powered by
+            <a href="https://github.com/nerfstudio-project/viser" target="_blank" rel="noopener noreferrer">Viser</a>.
+          </p>
         </div>
       </div>
     </div>
