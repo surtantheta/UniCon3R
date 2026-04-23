@@ -23,7 +23,6 @@ if (root) {
   const ui = {
     tabs: root.querySelector("[data-contact-tabs]"),
     image: root.querySelector("[data-contact-image]"),
-    imageCaption: root.querySelector("[data-contact-image-caption]"),
     canvas: root.querySelector("[data-contact-canvas]"),
     status: root.querySelector("[data-contact-status]"),
     slider: root.querySelector("[data-contact-slider]"),
@@ -191,7 +190,6 @@ if (root) {
     const sequence = state.sequences[state.activeSequence];
     ui.image.src = frame.imageElement?.src || frame.image;
     ui.image.alt = `${sequence.title} input frame ${frame.sourceFrame}`;
-    ui.imageCaption.textContent = `Source frame ${frame.sourceFrame} at ${frame.timeSeconds.toFixed(2)}s`;
     ui.slider.value = String(frameIndex);
     ui.output.textContent = `Frame ${frameIndex + 1}/${sequence.frames.length} | ${frame.contactCount} contact vertices`;
   }

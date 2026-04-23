@@ -524,14 +524,6 @@ p,
   display: none;
 }
 
-.contact-frame-caption {
-  margin: 0.55rem 0 0;
-  color: #555;
-  font-size: 14.5px;
-  line-height: 21px;
-  text-align: center;
-}
-
 .contact-legend {
   display: flex;
   flex-wrap: wrap;
