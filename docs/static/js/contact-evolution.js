@@ -8,14 +8,14 @@ if (root) {
     meshPath: "static/contact/tpose_smpl_template.obj",
     sequences: [
       {
-        id: "vid8",
+        id: "rich_localmesh_Gym_013_dips3",
         title: "Sequence 1",
-        path: "static/contact/vid8/contact_sequence.json",
+        path: "static/contact/rich_localmesh_Gym_013_dips3/contact_sequence.json",
       },
       {
-        id: "vid13",
+        id: "rich_localmesh_LectureHall_021_sidebalancerun1",
         title: "Sequence 2",
-        path: "static/contact/vid13/contact_sequence.json",
+        path: "static/contact/rich_localmesh_LectureHall_021_sidebalancerun1/contact_sequence.json",
       },
     ],
   };
