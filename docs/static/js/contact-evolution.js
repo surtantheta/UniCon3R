@@ -16,18 +16,18 @@ if (root) {
     {
       key: "leftHand",
       label: "Left Hand",
-      offset: (radius) => new THREE.Vector3(0.0, 0.0, radius * 2.3),
-      up: () => new THREE.Vector3(0.0, 1.0, 0.0),
+      offset: (radius) => new THREE.Vector3(0.0, -radius * 2.35, radius * 0.08),
+      up: () => new THREE.Vector3(0.0, 0.0, 1.0),
       targetOffset: () => new THREE.Vector3(0.0, 0.0, 0.0),
-      frameScale: 0.5,
+      frameScale: 0.46,
     },
     {
       key: "rightHand",
       label: "Right Hand",
-      offset: (radius) => new THREE.Vector3(0.0, 0.0, radius * 2.3),
-      up: () => new THREE.Vector3(0.0, 1.0, 0.0),
+      offset: (radius) => new THREE.Vector3(0.0, -radius * 2.35, radius * 0.08),
+      up: () => new THREE.Vector3(0.0, 0.0, 1.0),
       targetOffset: () => new THREE.Vector3(0.0, 0.0, 0.0),
-      frameScale: 0.5,
+      frameScale: 0.46,
     },
   ];
 
@@ -208,7 +208,7 @@ if (root) {
     const min = overallBox.min;
     const max = overallBox.max;
     const span = new THREE.Vector3().subVectors(max, min);
-    const handInset = span.x * 0.05;
+    const handInset = span.x * 0.04;
     const footCeiling = min.y + span.y * 0.12;
 
     return {
@@ -254,22 +254,13 @@ if (root) {
         regionGeometry.setAttribute("normal", geometry.getAttribute("normal"));
         regionGeometry.setAttribute("color", geometry.getAttribute("color"));
         regionGeometry.setIndex(new THREE.BufferAttribute(region.triangleIndices, 1));
-        const material = new THREE.MeshStandardMaterial({
+        const material = new THREE.MeshBasicMaterial({
           vertexColors: true,
-          roughness: 0.58,
-          metalness: 0.0,
           side: THREE.DoubleSide,
         });
         const mesh = new THREE.Mesh(regionGeometry, material);
         mesh.renderOrder = 0;
         scene.add(mesh);
-        scene.add(new THREE.HemisphereLight(0xffffff, 0xe6e8ec, 1.2));
-        const keyLight = new THREE.DirectionalLight(0xffffff, 0.95);
-        keyLight.position.set(0.5, -0.6, 2.2);
-        scene.add(keyLight);
-        const fillLight = new THREE.DirectionalLight(0xffffff, 0.35);
-        fillLight.position.set(-0.8, 0.5, 1.4);
-        scene.add(fillLight);
 
         const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 20);
         return {
