@@ -15,16 +15,16 @@ if (root) {
     {
       key: "leftHand",
       label: "Left Hand",
-      offset: (radius) => new THREE.Vector3(-radius * 1.15, -radius * 1.15, radius * 0.65),
-      up: () => new THREE.Vector3(0.0, 0.0, 1.0),
-      targetOffset: (radius) => new THREE.Vector3(radius * 0.08, -radius * 0.12, 0.0),
+      offset: (radius) => new THREE.Vector3(0.0, 0.0, radius * 2.3),
+      up: () => new THREE.Vector3(0.0, 1.0, 0.0),
+      targetOffset: () => new THREE.Vector3(0.0, 0.0, 0.0),
     },
     {
       key: "rightHand",
       label: "Right Hand",
-      offset: (radius) => new THREE.Vector3(radius * 1.15, -radius * 1.15, radius * 0.65),
-      up: () => new THREE.Vector3(0.0, 0.0, 1.0),
-      targetOffset: (radius) => new THREE.Vector3(-radius * 0.08, -radius * 0.12, 0.0),
+      offset: (radius) => new THREE.Vector3(0.0, 0.0, radius * 2.3),
+      up: () => new THREE.Vector3(0.0, 1.0, 0.0),
+      targetOffset: () => new THREE.Vector3(0.0, 0.0, 0.0),
     },
   ];
 
@@ -117,7 +117,6 @@ if (root) {
     controls: null,
     mesh: null,
     colorBuffer: null,
-    positions: null,
     regions: null,
     minimaps: [],
   };
@@ -160,7 +159,21 @@ if (root) {
     return box;
   }
 
-  function buildRegionData(positions, predicate, fallbackBox) {
+  function buildRegionTriangleIndices(indices, mask, minVerticesPerFace = 1) {
+    const selected = [];
+    for (let i = 0; i < indices.length; i += 3) {
+      const a = indices[i];
+      const b = indices[i + 1];
+      const c = indices[i + 2];
+      const hits = Number(mask[a]) + Number(mask[b]) + Number(mask[c]);
+      if (hits >= minVerticesPerFace) {
+        selected.push(a, b, c);
+      }
+    }
+    return new Uint32Array(selected);
+  }
+
+  function buildRegionData(positions, indices, predicate, fallbackBox, minVerticesPerFace = 1) {
     const vertexCount = positions.length / 3;
     const mask = new Uint8Array(vertexCount);
     const box = new THREE.Box3();
@@ -183,29 +196,35 @@ if (root) {
     const size = regionBox.getSize(new THREE.Vector3());
     const center = regionBox.getCenter(new THREE.Vector3());
     const radius = Math.max(size.x, size.y, size.z, 0.18);
-    return { mask, center, radius };
+    const triangleIndices = buildRegionTriangleIndices(indices, mask, minVerticesPerFace);
+    return { mask, center, radius, triangleIndices };
   }
 
-  function buildContactRegions(positions) {
+  function buildContactRegions(positions, indices) {
     const overallBox = box3FromPositions(positions);
     const min = overallBox.min;
     const max = overallBox.max;
     const span = new THREE.Vector3().subVectors(max, min);
-    const handYFloor = min.y + span.y * 0.32;
-    const handInset = span.x * 0.12;
-    const footCeiling = min.y + span.y * 0.18;
+    const handYFloor = min.y + span.y * 0.25;
+    const handYCeiling = min.y + span.y * 0.72;
+    const handInset = span.x * 0.14;
+    const footCeiling = min.y + span.y * 0.14;
 
     return {
-      feet: buildRegionData(positions, (_, y) => y <= footCeiling, overallBox),
+      feet: buildRegionData(positions, indices, (_, y) => y <= footCeiling, overallBox, 1),
       leftHand: buildRegionData(
         positions,
-        (x, y) => x <= min.x + handInset && y >= handYFloor,
-        overallBox
+        indices,
+        (x, y) => x <= min.x + handInset && y >= handYFloor && y <= handYCeiling,
+        overallBox,
+        2
       ),
       rightHand: buildRegionData(
         positions,
-        (x, y) => x >= max.x - handInset && y >= handYFloor,
-        overallBox
+        indices,
+        (x, y) => x >= max.x - handInset && y >= handYFloor && y <= handYCeiling,
+        overallBox,
+        2
       ),
     };
   }
@@ -225,42 +244,29 @@ if (root) {
         renderer.setClearColor(0xffffff, 0);
 
         const scene = new THREE.Scene();
+        const region = state.regions?.[minimap.key];
+        if (!region || region.triangleIndices.length === 0) return null;
+        const regionGeometry = new THREE.BufferGeometry();
+        regionGeometry.setAttribute("position", geometry.getAttribute("position"));
+        regionGeometry.setAttribute("normal", geometry.getAttribute("normal"));
+        regionGeometry.setAttribute("color", geometry.getAttribute("color"));
+        regionGeometry.setIndex(new THREE.BufferAttribute(region.triangleIndices, 1));
         const material = new THREE.MeshStandardMaterial({
           vertexColors: true,
           roughness: 0.58,
           metalness: 0.0,
           side: THREE.DoubleSide,
-          transparent: true,
-          opacity: 0.26,
-          depthWrite: false,
         });
-        const mesh = new THREE.Mesh(geometry, material);
+        const mesh = new THREE.Mesh(regionGeometry, material);
         mesh.renderOrder = 0;
         scene.add(mesh);
-
-        const contactGeometry = new THREE.BufferGeometry();
-        contactGeometry.setAttribute(
-          "position",
-          new THREE.Float32BufferAttribute([], 3)
-        );
-        const contactPoints = new THREE.Points(
-          contactGeometry,
-          new THREE.PointsMaterial({
-            color: new THREE.Color(colors.current[0], colors.current[1], colors.current[2]),
-            size: 3.2,
-            sizeAttenuation: false,
-            transparent: true,
-            opacity: 0.9,
-            depthTest: false,
-          })
-        );
-        contactPoints.renderOrder = 1;
-        scene.add(contactPoints);
-
         scene.add(new THREE.HemisphereLight(0xffffff, 0xe6e8ec, 1.2));
-        const keyLight = new THREE.DirectionalLight(0xffffff, 0.85);
-        keyLight.position.set(1.0, -1.2, 1.5);
+        const keyLight = new THREE.DirectionalLight(0xffffff, 0.95);
+        keyLight.position.set(0.5, -0.6, 2.2);
         scene.add(keyLight);
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.35);
+        fillLight.position.set(-0.8, 0.5, 1.4);
+        scene.add(fillLight);
 
         const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 20);
         return {
@@ -269,7 +275,6 @@ if (root) {
           renderer,
           scene,
           mesh,
-          contactPoints,
           camera,
         };
       })
@@ -362,32 +367,12 @@ if (root) {
   function updateMinimapState(frame, sequence) {
     ensureSequenceMinimapActivity(sequence);
     const visibleKeys = new Set(sequence.visibleMinimapKeys);
-    const counts = getRegionContactCounts(frame.contactIndices);
-    const positions = state.positions;
     state.minimaps.forEach((minimap) => {
       if (!visibleKeys.has(minimap.key)) return;
-      const count = counts[minimap.key];
-      minimap.element.classList.toggle("is-active", count > 0);
-      minimap.caption.textContent = minimap.label;
-
       const region = state.regions?.[minimap.key];
-      const contactPositions = [];
-      if (positions && region) {
-        for (const vertexIndex of frame.contactIndices) {
-          if (!region.mask[vertexIndex]) continue;
-          const offset = vertexIndex * 3;
-          contactPositions.push(
-            positions[offset],
-            positions[offset + 1],
-            positions[offset + 2]
-          );
-        }
-      }
-      minimap.contactPoints.geometry.setAttribute(
-        "position",
-        new THREE.Float32BufferAttribute(contactPositions, 3)
-      );
-      minimap.contactPoints.geometry.computeBoundingSphere();
+      const hasContact = frame.contactIndices.some((vertexIndex) => region?.mask[vertexIndex]);
+      minimap.element.classList.toggle("is-active", hasContact);
+      minimap.caption.textContent = minimap.label;
     });
   }
 
@@ -413,8 +398,10 @@ if (root) {
     geometry.translate(-center.x, -center.y, -center.z);
     geometry.computeVertexNormals();
     geometry.computeBoundingSphere();
-    state.positions = geometry.attributes.position.array;
-    state.regions = buildContactRegions(geometry.attributes.position.array);
+    state.regions = buildContactRegions(
+      geometry.attributes.position.array,
+      geometry.index.array
+    );
 
     state.colorBuffer = new Float32Array(meshData.vertexCount * 3);
     geometry.setAttribute("color", new THREE.BufferAttribute(state.colorBuffer, 3));
