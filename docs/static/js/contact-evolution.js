@@ -8,17 +8,23 @@ if (root) {
     {
       key: "feet",
       label: "Feet",
-      offset: (radius) => new THREE.Vector3(0.0, radius * 0.18, radius * 2.2),
+      offset: (radius) => new THREE.Vector3(0.0, -radius * 2.15, radius * 0.45),
+      up: () => new THREE.Vector3(0.0, 0.0, 1.0),
+      targetOffset: (radius) => new THREE.Vector3(0.0, -radius * 0.08, 0.0),
     },
     {
       key: "leftHand",
       label: "Left Hand",
-      offset: (radius) => new THREE.Vector3(-radius * 1.1, radius * 0.1, radius * 1.75),
+      offset: (radius) => new THREE.Vector3(-radius * 1.15, -radius * 1.15, radius * 0.65),
+      up: () => new THREE.Vector3(0.0, 0.0, 1.0),
+      targetOffset: (radius) => new THREE.Vector3(radius * 0.08, -radius * 0.12, 0.0),
     },
     {
       key: "rightHand",
       label: "Right Hand",
-      offset: (radius) => new THREE.Vector3(radius * 1.1, radius * 0.1, radius * 1.75),
+      offset: (radius) => new THREE.Vector3(radius * 1.15, -radius * 1.15, radius * 0.65),
+      up: () => new THREE.Vector3(0.0, 0.0, 1.0),
+      targetOffset: (radius) => new THREE.Vector3(-radius * 0.08, -radius * 0.12, 0.0),
     },
   ];
 
@@ -111,6 +117,7 @@ if (root) {
     controls: null,
     mesh: null,
     colorBuffer: null,
+    positions: null,
     regions: null,
     minimaps: [],
   };
@@ -223,12 +230,36 @@ if (root) {
           roughness: 0.58,
           metalness: 0.0,
           side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.52,
+          depthWrite: false,
         });
         const mesh = new THREE.Mesh(geometry, material);
+        mesh.renderOrder = 0;
         scene.add(mesh);
+
+        const contactGeometry = new THREE.BufferGeometry();
+        contactGeometry.setAttribute(
+          "position",
+          new THREE.Float32BufferAttribute([], 3)
+        );
+        const contactPoints = new THREE.Points(
+          contactGeometry,
+          new THREE.PointsMaterial({
+            color: new THREE.Color(colors.current[0], colors.current[1], colors.current[2]),
+            size: 8,
+            sizeAttenuation: false,
+            transparent: true,
+            opacity: 1.0,
+            depthTest: false,
+          })
+        );
+        contactPoints.renderOrder = 1;
+        scene.add(contactPoints);
+
         scene.add(new THREE.HemisphereLight(0xffffff, 0xe6e8ec, 1.2));
         const keyLight = new THREE.DirectionalLight(0xffffff, 0.85);
-        keyLight.position.set(1.2, 1.0, 2.0);
+        keyLight.position.set(1.0, -1.2, 1.5);
         scene.add(keyLight);
 
         const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 20);
@@ -238,6 +269,7 @@ if (root) {
           renderer,
           scene,
           mesh,
+          contactPoints,
           camera,
         };
       })
@@ -264,8 +296,8 @@ if (root) {
     minimap.camera.near = 0.01;
     minimap.camera.far = Math.max(10, region.radius * 8.0);
     minimap.camera.position.copy(region.center).add(minimap.offset(region.radius));
-    minimap.camera.up.set(0, 1, 0);
-    minimap.camera.lookAt(region.center);
+    minimap.camera.up.copy(minimap.up(region.radius));
+    minimap.camera.lookAt(region.center.clone().add(minimap.targetOffset(region.radius)));
     minimap.camera.updateProjectionMatrix();
   }
 
@@ -331,11 +363,31 @@ if (root) {
     ensureSequenceMinimapActivity(sequence);
     const visibleKeys = new Set(sequence.visibleMinimapKeys);
     const counts = getRegionContactCounts(frame.contactIndices);
+    const positions = state.positions;
     state.minimaps.forEach((minimap) => {
       if (!visibleKeys.has(minimap.key)) return;
       const count = counts[minimap.key];
       minimap.element.classList.toggle("is-active", count > 0);
-      minimap.caption.textContent = count > 0 ? `${minimap.label} · ${count}` : minimap.label;
+      minimap.caption.textContent = minimap.label;
+
+      const region = state.regions?.[minimap.key];
+      const contactPositions = [];
+      if (positions && region) {
+        for (const vertexIndex of frame.contactIndices) {
+          if (!region.mask[vertexIndex]) continue;
+          const offset = vertexIndex * 3;
+          contactPositions.push(
+            positions[offset],
+            positions[offset + 1],
+            positions[offset + 2]
+          );
+        }
+      }
+      minimap.contactPoints.geometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(contactPositions, 3)
+      );
+      minimap.contactPoints.geometry.computeBoundingSphere();
     });
   }
 
@@ -361,6 +413,7 @@ if (root) {
     geometry.translate(-center.x, -center.y, -center.z);
     geometry.computeVertexNormals();
     geometry.computeBoundingSphere();
+    state.positions = geometry.attributes.position.array;
     state.regions = buildContactRegions(geometry.attributes.position.array);
 
     state.colorBuffer = new Float32Array(meshData.vertexCount * 3);
