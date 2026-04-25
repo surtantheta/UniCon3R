@@ -544,6 +544,54 @@ p,
   height: 100%;
 }
 
+.contact-minimap-stack {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  gap: 8px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.contact-minimap {
+  display: grid;
+  gap: 4px;
+  width: clamp(88px, 23%, 116px);
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(34, 75, 141, 0.16);
+  border-radius: 0.45rem;
+  box-shadow: 0 10px 24px rgba(20, 28, 45, 0.12);
+  backdrop-filter: blur(6px);
+}
+
+.contact-minimap[hidden] {
+  display: none;
+}
+
+.contact-minimap.is-active {
+  border-color: rgba(0, 209, 242, 0.9);
+  box-shadow: 0 12px 28px rgba(0, 209, 242, 0.18);
+}
+
+.contact-minimap canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 0.32rem;
+  background: #fff;
+}
+
+.contact-minimap figcaption {
+  margin: 0;
+  color: #17376b;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+}
+
 .contact-status {
   position: absolute;
   inset: 0;
@@ -801,6 +849,25 @@ p,
   .contact-controls output {
     min-width: 0;
     text-align: center;
+  }
+
+  .contact-minimap-stack {
+    top: auto;
+    right: auto;
+    bottom: 10px;
+    left: 10px;
+    grid-auto-flow: column;
+    align-items: end;
+  }
+
+  .contact-minimap {
+    width: clamp(72px, 24vw, 92px);
+    padding: 5px;
+    gap: 3px;
+  }
+
+  .contact-minimap figcaption {
+    font-size: 10.5px;
   }
 
   .results-table {

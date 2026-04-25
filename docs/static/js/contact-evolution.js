@@ -4,6 +4,24 @@ import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/exampl
 const root = document.querySelector("[data-contact-evolution]");
 
 if (root) {
+  const minimapConfigs = [
+    {
+      key: "feet",
+      label: "Feet",
+      offset: (radius) => new THREE.Vector3(0.0, radius * 0.18, radius * 2.2),
+    },
+    {
+      key: "leftHand",
+      label: "Left Hand",
+      offset: (radius) => new THREE.Vector3(-radius * 1.1, radius * 0.1, radius * 1.75),
+    },
+    {
+      key: "rightHand",
+      label: "Right Hand",
+      offset: (radius) => new THREE.Vector3(radius * 1.1, radius * 0.1, radius * 1.75),
+    },
+  ];
+
   const config = {
     meshPath: "static/contact/tpose_smpl_template.obj",
     sequences: [
@@ -54,10 +72,22 @@ if (root) {
     tabs: root.querySelector("[data-contact-tabs]"),
     image: root.querySelector("[data-contact-image]"),
     canvas: root.querySelector("[data-contact-canvas]"),
+    minimapStack: root.querySelector("[data-contact-minimap-stack]"),
     status: root.querySelector("[data-contact-status]"),
     slider: root.querySelector("[data-contact-slider]"),
     play: root.querySelector("[data-contact-play]"),
     output: root.querySelector("[data-contact-output]"),
+    minimaps: Object.fromEntries(
+      minimapConfigs.map(({ key, label }) => [
+        key,
+        {
+          label,
+          element: root.querySelector(`[data-contact-minimap="${key}"]`),
+          canvas: root.querySelector(`[data-contact-minimap-canvas="${key}"]`),
+          caption: root.querySelector(`[data-contact-minimap-label="${key}"]`),
+        },
+      ])
+    ),
   };
 
   const colors = {
@@ -81,6 +111,8 @@ if (root) {
     controls: null,
     mesh: null,
     colorBuffer: null,
+    regions: null,
+    minimaps: [],
   };
 
   function parseObj(text) {
@@ -111,6 +143,202 @@ if (root) {
     };
   }
 
+  function box3FromPositions(positions) {
+    const box = new THREE.Box3();
+    const vertex = new THREE.Vector3();
+    for (let i = 0; i < positions.length; i += 3) {
+      vertex.set(positions[i], positions[i + 1], positions[i + 2]);
+      box.expandByPoint(vertex);
+    }
+    return box;
+  }
+
+  function buildRegionData(positions, predicate, fallbackBox) {
+    const vertexCount = positions.length / 3;
+    const mask = new Uint8Array(vertexCount);
+    const box = new THREE.Box3();
+    const vertex = new THREE.Vector3();
+    let count = 0;
+
+    for (let vertexIndex = 0; vertexIndex < vertexCount; vertexIndex += 1) {
+      const offset = vertexIndex * 3;
+      const x = positions[offset];
+      const y = positions[offset + 1];
+      const z = positions[offset + 2];
+      if (!predicate(x, y, z)) continue;
+      mask[vertexIndex] = 1;
+      vertex.set(x, y, z);
+      box.expandByPoint(vertex);
+      count += 1;
+    }
+
+    const regionBox = count ? box : fallbackBox.clone();
+    const size = regionBox.getSize(new THREE.Vector3());
+    const center = regionBox.getCenter(new THREE.Vector3());
+    const radius = Math.max(size.x, size.y, size.z, 0.18);
+    return { mask, center, radius };
+  }
+
+  function buildContactRegions(positions) {
+    const overallBox = box3FromPositions(positions);
+    const min = overallBox.min;
+    const max = overallBox.max;
+    const span = new THREE.Vector3().subVectors(max, min);
+    const handYFloor = min.y + span.y * 0.32;
+    const handInset = span.x * 0.12;
+    const footCeiling = min.y + span.y * 0.18;
+
+    return {
+      feet: buildRegionData(positions, (_, y) => y <= footCeiling, overallBox),
+      leftHand: buildRegionData(
+        positions,
+        (x, y) => x <= min.x + handInset && y >= handYFloor,
+        overallBox
+      ),
+      rightHand: buildRegionData(
+        positions,
+        (x, y) => x >= max.x - handInset && y >= handYFloor,
+        overallBox
+      ),
+    };
+  }
+
+  function createMinimaps(geometry) {
+    state.minimaps = minimapConfigs
+      .map((minimap) => {
+        const uiEntry = ui.minimaps[minimap.key];
+        if (!uiEntry?.canvas || !uiEntry.element || !uiEntry.caption) return null;
+        const renderer = new THREE.WebGLRenderer({
+          canvas: uiEntry.canvas,
+          antialias: true,
+          alpha: true,
+        });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.setClearColor(0xffffff, 0);
+
+        const scene = new THREE.Scene();
+        const material = new THREE.MeshStandardMaterial({
+          vertexColors: true,
+          roughness: 0.58,
+          metalness: 0.0,
+          side: THREE.DoubleSide,
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+        scene.add(new THREE.HemisphereLight(0xffffff, 0xe6e8ec, 1.2));
+        const keyLight = new THREE.DirectionalLight(0xffffff, 0.85);
+        keyLight.position.set(1.2, 1.0, 2.0);
+        scene.add(keyLight);
+
+        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 20);
+        return {
+          ...minimap,
+          ...uiEntry,
+          renderer,
+          scene,
+          mesh,
+          camera,
+        };
+      })
+      .filter(Boolean);
+  }
+
+  function resizeMinimap(minimap) {
+    const rect = minimap.canvas.getBoundingClientRect();
+    const width = Math.max(1, Math.round(rect.width));
+    const height = Math.max(1, Math.round(rect.height));
+    if (width <= 1 || height <= 1) return;
+
+    minimap.renderer.setSize(width, height, false);
+
+    const region = state.regions?.[minimap.key];
+    if (!region) return;
+    const aspect = width / height;
+    const halfHeight = region.radius * 0.82;
+    const halfWidth = halfHeight * aspect;
+    minimap.camera.left = -halfWidth;
+    minimap.camera.right = halfWidth;
+    minimap.camera.top = halfHeight;
+    minimap.camera.bottom = -halfHeight;
+    minimap.camera.near = 0.01;
+    minimap.camera.far = Math.max(10, region.radius * 8.0);
+    minimap.camera.position.copy(region.center).add(minimap.offset(region.radius));
+    minimap.camera.up.set(0, 1, 0);
+    minimap.camera.lookAt(region.center);
+    minimap.camera.updateProjectionMatrix();
+  }
+
+  function resizeMinimaps() {
+    state.minimaps.forEach((minimap) => {
+      if (minimap.element.hidden) return;
+      resizeMinimap(minimap);
+    });
+  }
+
+  function renderMinimaps() {
+    state.minimaps.forEach((minimap) => {
+      if (minimap.element.hidden) return;
+      minimap.renderer.render(minimap.scene, minimap.camera);
+    });
+  }
+
+  function getRegionContactCounts(contactIndices) {
+    const counts = Object.fromEntries(minimapConfigs.map(({ key }) => [key, 0]));
+    if (!state.regions) return counts;
+    for (const vertexIndex of contactIndices) {
+      for (const { key } of minimapConfigs) {
+        if (state.regions[key]?.mask[vertexIndex]) {
+          counts[key] += 1;
+        }
+      }
+    }
+    return counts;
+  }
+
+  function ensureSequenceMinimapActivity(sequence) {
+    if (sequence.visibleMinimapKeys) return;
+    const totals = getRegionContactCounts(
+      sequence.frames.flatMap((frame) => frame.contactIndices)
+    );
+    sequence.visibleMinimapKeys = minimapConfigs
+      .map(({ key }) => key)
+      .filter((key) => totals[key] > 0);
+    if (!sequence.visibleMinimapKeys.length) {
+      sequence.visibleMinimapKeys = ["feet"];
+    }
+  }
+
+  function updateMinimapVisibility(sequence) {
+    ensureSequenceMinimapActivity(sequence);
+    const visibleKeys = new Set(sequence.visibleMinimapKeys);
+    let visibleCount = 0;
+    state.minimaps.forEach((minimap) => {
+      const visible = visibleKeys.has(minimap.key);
+      minimap.element.hidden = !visible;
+      if (visible) {
+        visibleCount += 1;
+        minimap.caption.textContent = minimap.label;
+        resizeMinimap(minimap);
+      }
+    });
+    if (ui.minimapStack) {
+      ui.minimapStack.hidden = visibleCount === 0;
+    }
+  }
+
+  function updateMinimapState(frame, sequence) {
+    ensureSequenceMinimapActivity(sequence);
+    const visibleKeys = new Set(sequence.visibleMinimapKeys);
+    const counts = getRegionContactCounts(frame.contactIndices);
+    state.minimaps.forEach((minimap) => {
+      if (!visibleKeys.has(minimap.key)) return;
+      const count = counts[minimap.key];
+      minimap.element.classList.toggle("is-active", count > 0);
+      minimap.caption.textContent = count > 0 ? `${minimap.label} · ${count}` : minimap.label;
+    });
+  }
+
   function setupViewer(meshData) {
     state.scene = new THREE.Scene();
     state.scene.background = new THREE.Color(0xffffff);
@@ -133,6 +361,7 @@ if (root) {
     geometry.translate(-center.x, -center.y, -center.z);
     geometry.computeVertexNormals();
     geometry.computeBoundingSphere();
+    state.regions = buildContactRegions(geometry.attributes.position.array);
 
     state.colorBuffer = new Float32Array(meshData.vertexCount * 3);
     geometry.setAttribute("color", new THREE.BufferAttribute(state.colorBuffer, 3));
@@ -163,10 +392,15 @@ if (root) {
     state.controls.enableDamping = true;
     state.controls.dampingFactor = 0.08;
     state.controls.enablePan = false;
+    state.controls.zoomSpeed = 2.6;
+    if ("zoomToCursor" in state.controls) {
+      state.controls.zoomToCursor = true;
+    }
     state.controls.autoRotate = true;
     state.controls.autoRotateSpeed = 1.4;
     state.controls.target.set(0, 0, 0);
 
+    createMinimaps(geometry);
     window.addEventListener("resize", resizeViewer);
     resizeViewer();
     animate();
@@ -180,12 +414,14 @@ if (root) {
     state.camera.aspect = width / height;
     state.camera.updateProjectionMatrix();
     state.renderer.setSize(width, height, false);
+    resizeMinimaps();
   }
 
   function animate() {
     requestAnimationFrame(animate);
     state.controls?.update();
     state.renderer?.render(state.scene, state.camera);
+    renderMinimaps();
   }
 
   function setVertexColor(vertexIndex, color, alpha = 1) {
@@ -215,6 +451,7 @@ if (root) {
       setVertexColor(vertexIndex, colors.current, 1);
     }
     state.mesh.geometry.attributes.color.needsUpdate = true;
+    updateMinimapState(frame, sequence);
     updateUi(frame, clampedIndex);
   }
 
@@ -286,6 +523,7 @@ if (root) {
     ui.slider.max = String(sequence.frames.length - 1);
     ui.slider.value = "0";
     buildTabs();
+    updateMinimapVisibility(sequence);
     applyContactFrame(0);
     preloadFrameImages(sequence).then(() => {
       if (state.sequences[state.activeSequence] !== sequence) return;
