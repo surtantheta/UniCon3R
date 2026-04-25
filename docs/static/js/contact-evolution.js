@@ -11,6 +11,7 @@ if (root) {
       offset: (radius) => new THREE.Vector3(0.0, -radius * 2.45, 0.0),
       up: () => new THREE.Vector3(0.0, 0.0, 1.0),
       targetOffset: () => new THREE.Vector3(0.0, 0.0, 0.0),
+      frameScale: 0.56,
     },
     {
       key: "leftHand",
@@ -18,6 +19,7 @@ if (root) {
       offset: (radius) => new THREE.Vector3(0.0, 0.0, radius * 2.3),
       up: () => new THREE.Vector3(0.0, 1.0, 0.0),
       targetOffset: () => new THREE.Vector3(0.0, 0.0, 0.0),
+      frameScale: 0.5,
     },
     {
       key: "rightHand",
@@ -25,6 +27,7 @@ if (root) {
       offset: (radius) => new THREE.Vector3(0.0, 0.0, radius * 2.3),
       up: () => new THREE.Vector3(0.0, 1.0, 0.0),
       targetOffset: () => new THREE.Vector3(0.0, 0.0, 0.0),
+      frameScale: 0.5,
     },
   ];
 
@@ -205,24 +208,22 @@ if (root) {
     const min = overallBox.min;
     const max = overallBox.max;
     const span = new THREE.Vector3().subVectors(max, min);
-    const handYFloor = min.y + span.y * 0.25;
-    const handYCeiling = min.y + span.y * 0.72;
-    const handInset = span.x * 0.14;
-    const footCeiling = min.y + span.y * 0.14;
+    const handInset = span.x * 0.05;
+    const footCeiling = min.y + span.y * 0.12;
 
     return {
       feet: buildRegionData(positions, indices, (_, y) => y <= footCeiling, overallBox, 1),
       leftHand: buildRegionData(
         positions,
         indices,
-        (x, y) => x <= min.x + handInset && y >= handYFloor && y <= handYCeiling,
+        (x) => x <= min.x + handInset,
         overallBox,
         2
       ),
       rightHand: buildRegionData(
         positions,
         indices,
-        (x, y) => x >= max.x - handInset && y >= handYFloor && y <= handYCeiling,
+        (x) => x >= max.x - handInset,
         overallBox,
         2
       ),
@@ -234,6 +235,8 @@ if (root) {
       .map((minimap) => {
         const uiEntry = ui.minimaps[minimap.key];
         if (!uiEntry?.canvas || !uiEntry.element || !uiEntry.caption) return null;
+        uiEntry.element.hidden = true;
+        uiEntry.caption.textContent = minimap.label;
         const renderer = new THREE.WebGLRenderer({
           canvas: uiEntry.canvas,
           antialias: true,
@@ -292,7 +295,7 @@ if (root) {
     const region = state.regions?.[minimap.key];
     if (!region) return;
     const aspect = width / height;
-    const halfHeight = region.radius * 0.82;
+    const halfHeight = region.radius * (minimap.frameScale || 0.82);
     const halfWidth = halfHeight * aspect;
     minimap.camera.left = -halfWidth;
     minimap.camera.right = halfWidth;
@@ -350,6 +353,11 @@ if (root) {
     ensureSequenceMinimapActivity(sequence);
     const visibleKeys = new Set(sequence.visibleMinimapKeys);
     let visibleCount = 0;
+    Object.values(ui.minimaps).forEach((entry) => {
+      if (!entry?.element) return;
+      entry.element.hidden = true;
+      entry.element.classList.remove("is-active");
+    });
     state.minimaps.forEach((minimap) => {
       const visible = visibleKeys.has(minimap.key);
       minimap.element.hidden = !visible;
@@ -361,6 +369,7 @@ if (root) {
     });
     if (ui.minimapStack) {
       ui.minimapStack.hidden = visibleCount === 0;
+      ui.minimapStack.setAttribute("aria-hidden", visibleCount === 0 ? "true" : "false");
     }
   }
 
@@ -368,7 +377,10 @@ if (root) {
     ensureSequenceMinimapActivity(sequence);
     const visibleKeys = new Set(sequence.visibleMinimapKeys);
     state.minimaps.forEach((minimap) => {
-      if (!visibleKeys.has(minimap.key)) return;
+      if (!visibleKeys.has(minimap.key)) {
+        minimap.element.classList.remove("is-active");
+        return;
+      }
       const region = state.regions?.[minimap.key];
       const hasContact = frame.contactIndices.some((vertexIndex) => region?.mask[vertexIndex]);
       minimap.element.classList.toggle("is-active", hasContact);

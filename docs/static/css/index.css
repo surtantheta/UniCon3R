@@ -552,6 +552,7 @@ p,
   gap: 8px;
   z-index: 1;
   pointer-events: none;
+  justify-items: end;
 }
 
 .contact-minimap {
@@ -852,16 +853,16 @@ p,
   }
 
   .contact-minimap-stack {
-    top: auto;
-    right: auto;
-    bottom: 10px;
-    left: 10px;
-    grid-auto-flow: column;
-    align-items: end;
+    top: 10px;
+    right: 10px;
+    bottom: auto;
+    left: auto;
+    grid-auto-flow: row;
+    align-items: stretch;
   }
 
   .contact-minimap {
-    width: clamp(72px, 24vw, 92px);
+    width: clamp(88px, 23vw, 102px);
     padding: 5px;
     gap: 3px;
   }
