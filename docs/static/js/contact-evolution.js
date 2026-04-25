@@ -8,9 +8,9 @@ if (root) {
     {
       key: "feet",
       label: "Feet",
-      offset: (radius) => new THREE.Vector3(0.0, -radius * 2.15, radius * 0.45),
+      offset: (radius) => new THREE.Vector3(0.0, -radius * 2.45, 0.0),
       up: () => new THREE.Vector3(0.0, 0.0, 1.0),
-      targetOffset: (radius) => new THREE.Vector3(0.0, -radius * 0.08, 0.0),
+      targetOffset: () => new THREE.Vector3(0.0, 0.0, 0.0),
     },
     {
       key: "leftHand",
@@ -231,7 +231,7 @@ if (root) {
           metalness: 0.0,
           side: THREE.DoubleSide,
           transparent: true,
-          opacity: 0.52,
+          opacity: 0.26,
           depthWrite: false,
         });
         const mesh = new THREE.Mesh(geometry, material);
@@ -247,10 +247,10 @@ if (root) {
           contactGeometry,
           new THREE.PointsMaterial({
             color: new THREE.Color(colors.current[0], colors.current[1], colors.current[2]),
-            size: 8,
+            size: 3.2,
             sizeAttenuation: false,
             transparent: true,
-            opacity: 1.0,
+            opacity: 0.9,
             depthTest: false,
           })
         );
