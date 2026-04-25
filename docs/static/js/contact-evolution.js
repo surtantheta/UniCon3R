@@ -11,23 +11,23 @@ if (root) {
       offset: (radius) => new THREE.Vector3(0.0, -radius * 2.45, 0.0),
       up: () => new THREE.Vector3(0.0, 0.0, 1.0),
       targetOffset: () => new THREE.Vector3(0.0, 0.0, 0.0),
-      frameScale: 0.56,
+      frameScale: 0.54,
     },
     {
       key: "leftHand",
       label: "Left Hand",
-      offset: (radius) => new THREE.Vector3(0.0, -radius * 2.35, radius * 0.08),
+      offset: (radius) => new THREE.Vector3(0.0, -radius * 2.05, radius * 0.42),
       up: () => new THREE.Vector3(0.0, 0.0, 1.0),
       targetOffset: () => new THREE.Vector3(0.0, 0.0, 0.0),
-      frameScale: 0.46,
+      frameScale: 0.54,
     },
     {
       key: "rightHand",
       label: "Right Hand",
-      offset: (radius) => new THREE.Vector3(0.0, -radius * 2.35, radius * 0.08),
+      offset: (radius) => new THREE.Vector3(0.0, -radius * 2.05, radius * 0.42),
       up: () => new THREE.Vector3(0.0, 0.0, 1.0),
       targetOffset: () => new THREE.Vector3(0.0, 0.0, 0.0),
-      frameScale: 0.46,
+      frameScale: 0.56,
     },
   ];
 
@@ -107,7 +107,13 @@ if (root) {
   ui.play.disabled = true;
 
   const state = {
-    sequences: [],
+    sequences: config.sequences.map((sequence) => ({
+      ...sequence,
+      frames: null,
+      dataPromise: null,
+      preloadPromise: null,
+      visibleMinimapKeys: null,
+    })),
     activeSequence: 0,
     activeFrame: 0,
     activePage: 0,
@@ -208,7 +214,7 @@ if (root) {
     const min = overallBox.min;
     const max = overallBox.max;
     const span = new THREE.Vector3().subVectors(max, min);
-    const handInset = span.x * 0.04;
+    const handInset = span.x * 0.12;
     const footCeiling = min.y + span.y * 0.12;
 
     return {
@@ -254,13 +260,22 @@ if (root) {
         regionGeometry.setAttribute("normal", geometry.getAttribute("normal"));
         regionGeometry.setAttribute("color", geometry.getAttribute("color"));
         regionGeometry.setIndex(new THREE.BufferAttribute(region.triangleIndices, 1));
-        const material = new THREE.MeshBasicMaterial({
+        const material = new THREE.MeshStandardMaterial({
           vertexColors: true,
+          roughness: 0.68,
+          metalness: 0.0,
           side: THREE.DoubleSide,
         });
         const mesh = new THREE.Mesh(regionGeometry, material);
         mesh.renderOrder = 0;
         scene.add(mesh);
+        scene.add(new THREE.HemisphereLight(0xffffff, 0xd8d8d8, 1.25));
+        const keyLight = new THREE.DirectionalLight(0xffffff, 1.15);
+        keyLight.position.set(0.2, 0.8, 2.0);
+        scene.add(keyLight);
+        const rimLight = new THREE.DirectionalLight(0xffffff, 0.45);
+        rimLight.position.set(-1.8, 0.4, -1.4);
+        scene.add(rimLight);
 
         const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 20);
         return {
@@ -555,24 +570,70 @@ if (root) {
     ui.tabs.append(previousPageButton, tabPage, nextPageButton);
   }
 
-  function selectSequence(index) {
+  function loadSequenceData(sequence) {
+    if (sequence.frames) {
+      return Promise.resolve(sequence);
+    }
+    if (sequence.dataPromise) {
+      return sequence.dataPromise;
+    }
+    sequence.dataPromise = fetch(sequence.path)
+      .then((response) => response.json())
+      .then((data) => {
+        const title = sequence.title;
+        Object.assign(sequence, data);
+        sequence.title = title;
+        sequence.frames = (data.frames || []).map((frame) => ({
+          ...frame,
+          imageElement: frame.imageElement || null,
+        }));
+        return sequence;
+      })
+      .catch((error) => {
+        sequence.dataPromise = null;
+        throw error;
+      });
+    return sequence.dataPromise;
+  }
+
+  function prefetchRemainingSequenceData() {
+    let chain = Promise.resolve();
+    state.sequences.forEach((sequence, index) => {
+      if (index === state.activeSequence) return;
+      chain = chain.then(() => loadSequenceData(sequence).catch(() => undefined));
+    });
+    return chain;
+  }
+
+  async function selectSequence(index) {
     stopPlayback();
     state.activeSequence = index;
     state.activeFrame = 0;
     const sequence = state.sequences[index];
     ui.play.disabled = true;
-    ui.status.hidden = false;
-    ui.status.textContent = `Loading ${sequence.title} contact frames...`;
-    ui.slider.max = String(sequence.frames.length - 1);
-    ui.slider.value = "0";
     buildTabs();
-    updateMinimapVisibility(sequence);
-    applyContactFrame(0);
-    preloadFrameImages(sequence).then(() => {
+    if (!sequence.frames) {
+      ui.status.hidden = false;
+      ui.status.textContent = `Loading ${sequence.title} contact frames...`;
+    }
+    try {
+      await loadSequenceData(sequence);
       if (state.sequences[state.activeSequence] !== sequence) return;
+      ui.slider.max = String(sequence.frames.length - 1);
+      ui.slider.value = "0";
+      updateMinimapVisibility(sequence);
+      applyContactFrame(0);
       ui.play.disabled = false;
       ui.status.hidden = true;
-    });
+      window.setTimeout(() => {
+        preloadFrameImages(sequence).catch(() => undefined);
+      }, 0);
+    } catch (error) {
+      console.error(error);
+      if (state.sequences[state.activeSequence] !== sequence) return;
+      ui.status.hidden = false;
+      ui.status.textContent = `Could not load ${sequence.title} contact frames.`;
+    }
   }
 
   function stopPlayback() {
@@ -636,16 +697,16 @@ if (root) {
 
   async function main() {
     try {
-      const [meshText, ...sequences] = await Promise.all([
+      const [meshText] = await Promise.all([
         fetch(config.meshPath).then((response) => response.text()),
-        ...config.sequences.map((sequence) =>
-          fetch(sequence.path).then((response) => response.json())
-        ),
+        loadSequenceData(state.sequences[0]),
       ]);
-      state.sequences = sequences;
       setupViewer(parseObj(meshText));
       setupEvents();
-      selectSequence(0);
+      await selectSequence(0);
+      window.setTimeout(() => {
+        prefetchRemainingSequenceData().catch(() => undefined);
+      }, 0);
     } catch (error) {
       console.error(error);
       ui.status.textContent = "Could not load temporal contact assets.";

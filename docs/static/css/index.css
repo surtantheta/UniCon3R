@@ -581,7 +581,7 @@ p,
   width: 100%;
   aspect-ratio: 1 / 1;
   border-radius: 0.32rem;
-  background: #fff;
+  background: #f4f7fb;
 }
 
 .contact-minimap figcaption {
@@ -634,7 +634,7 @@ p,
 }
 
 .contact-swatch-current {
-  background: #00eaf9;
+  background: radial-gradient(circle at 32% 28%, #61f4ff 0%, #21e6fa 42%, #00d5f2 72%, #00bbe8 100%);
 }
 
 .contact-swatch-body {
