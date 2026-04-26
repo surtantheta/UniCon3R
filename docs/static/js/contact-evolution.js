@@ -222,14 +222,14 @@ if (root) {
       leftHand: buildRegionData(
         positions,
         indices,
-        (x) => x <= min.x + handInset,
+        (x) => x >= max.x - handInset,
         overallBox,
         2
       ),
       rightHand: buildRegionData(
         positions,
         indices,
-        (x) => x >= max.x - handInset,
+        (x) => x <= min.x + handInset,
         overallBox,
         2
       ),
