@@ -50,28 +50,23 @@ if (root) {
         path: "static/contact/rich_localmesh_LectureHall_021_sidebalancerun1/contact_sequence.json",
       },
       {
-        id: "rich_plausibility1",
-        title: "Sequence 4",
-        path: "static/contact/rich_plausibility1/contact_sequence.json",
-      },
-      {
         id: "rich_plausibility2",
-        title: "Sequence 5",
+        title: "Sequence 4",
         path: "static/contact/rich_plausibility2/contact_sequence.json",
       },
       {
         id: "emdb_P4_35_indoor_walk",
-        title: "Sequence 6",
+        title: "Sequence 5",
         path: "static/contact/emdb_P4_35_indoor_walk/contact_sequence.json",
       },
       {
         id: "emdb_P9_77_outdoor_stairs_up",
-        title: "Sequence 7",
+        title: "Sequence 6",
         path: "static/contact/emdb_P9_77_outdoor_stairs_up/contact_sequence.json",
       },
       {
         id: "emdb_P3_30_outdoor_stairs_down",
-        title: "Sequence 8",
+        title: "Sequence 7",
         path: "static/contact/emdb_P3_30_outdoor_stairs_down/contact_sequence.json",
       },
     ],
