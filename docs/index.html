@@ -505,13 +505,6 @@
             article.dataset.viewerSpeed = config.viewerSpeed;
           }
 
-          const header = document.createElement("div");
-          header.className = "sequence-slide-header";
-          const title = document.createElement("h3");
-          title.className = "title is-5";
-          title.textContent = config.title;
-          header.append(title);
-
           const grid = document.createElement("div");
           grid.className = "sequence-panel-grid";
           const videoCard = document.createElement("div");
@@ -540,7 +533,7 @@
           viewerCard.querySelector("h4").textContent = "Interactive 4D Reconstruction";
 
           grid.append(videoCard, viewerCard);
-          article.append(header, grid);
+          article.append(grid);
           slideContainer.append(article);
         });
       }
