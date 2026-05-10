@@ -3,7 +3,8 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="description" content="UniCon3R: Contact-Driven Human-Scene Reconstruction from Monocular Video">
+  <meta name="description"
+    content="UniCon3R: Unified Contact-aware 4D Human-Scene Reconstruction from Monocular Video">
   <meta property="og:title" content="UniCon3R">
   <meta property="og:description"
     content="Contact-aware unified human-scene reconstruction from monocular video with physically grounded motion and dense contact prediction.">
@@ -18,7 +19,7 @@
 
   <title>UniCon3R</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-  <link rel="stylesheet" href="static/css/index.css?v=20260425-contact-minimap-v7">
+  <link rel="stylesheet" href="static/css/index.css?v=20260510-final-figures">
 </head>
 
 <body>
@@ -30,7 +31,7 @@
           <div class="column is-four-fifths has-text-centered">
             <h1 class="title is-1 publication-title">
               <span class="publication-title-line">
-                <span class="publication-title-text">UniCon3R: Contact-Driven Human-Scene Reconstruction from Monocular Video</span>
+                <span class="publication-title-text">UniCon3R: Unified Contact-aware 4D Human-Scene Reconstruction from Monocular Video</span>
               </span>
             </h1>
 
@@ -79,13 +80,14 @@
           <h2 class="title is-3 has-text-centered">Abstract</h2>
           <div class="content has-text-justified paper-copy">
             <p>
-              <strong>UniCon3R</strong> is a feed-forward framework for online human-scene 4D reconstruction from
-              monocular video. Existing reconstruction methods recover motion and scene geometry, but often miss the
-              physical interaction between people and their surroundings, leading to floating bodies, penetration, and
-              unstable scene alignment. UniCon3R treats human-scene contact as an internal corrective prior: it infers
-              3D contact from pose and scene geometry, then feeds this interaction cue back into the human branch to
-              refine the final reconstruction. This produces spatially aligned humans and scene geometry while showing
-              that contact is not only an evaluation signal, but a mechanism for physically grounded reconstruction.
+              We introduce <strong>UniCon3R</strong>, a unified feed-forward framework for online human-scene 4D
+              reconstruction from monocular video. Current feed-forward human-scene reconstruction methods suffer from
+              artifacts, where bodies float above the ground or penetrate parts of the scene. A key reason is the lack
+              of effective interaction modelling between the human and the environment. UniCon3R explicitly models
+              interaction by inferring 4D contact from human pose and scene geometry, then uses contact as a corrective
+              cue for generating the pose. This enables UniCon3R to jointly recover scene geometry and spatially aligned
+              4D humans within the scene, establishing contact as an internal prior for physically grounded
+              reconstruction.
             </p>
           </div>
         </div>
@@ -236,6 +238,23 @@
     </div>
   </section>
 
+  <section class="section alt-section" id="qualitative-overview">
+    <div class="container is-max-widescreen">
+      <div class="columns is-centered">
+        <div class="column is-four-fifths has-text-centered">
+          <h2 class="title is-3">Qualitative Overview</h2>
+          <p class="section-intro">
+            Contact improves unified 4D human-scene reconstruction by correcting body-scene misalignment, reducing
+            penetration, and improving global motion while preserving feed-forward inference.
+          </p>
+          <div class="media-frame">
+            <img src="static/images/teaser.png" alt="UniCon3R qualitative overview" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="section section-tight" id="contact-prediction">
     <div class="container is-max-widescreen">
       <div class="columns is-centered">
@@ -249,8 +268,9 @@
             <img src="static/images/contact_comparison.png" alt="UniCon3R contact comparison" loading="lazy">
           </div>
           <p class="section-caption">
-            Qualitative contact comparison against DECO on in-the-wild web videos. Contact vertices are shown in green
-            on the mesh surface.
+            Qualitative comparison of contact prediction on web images. UniCon3R captures contact on challenging body
+            regions, including the lower torso, palms, and fingertips, while DECO tends to concentrate predictions on
+            narrower visually salient support regions.
           </p>
         </div>
       </div>
@@ -261,10 +281,10 @@
     <div class="container is-max-widescreen">
       <div class="columns is-centered">
         <div class="column is-four-fifths has-text-centered">
-          <h2 class="title is-3">Global Trajectory Grounding</h2>
+          <h2 class="title is-3">Global Human Motion Estimation</h2>
           <p class="section-intro">
-            On EMDB-2, UniCon3R improves world-aligned trajectory quality and reduces drift relative to Human3R while
-            preserving a unified streaming pipeline.
+            On EMDB-2, UniCon3R improves global human trajectory estimation relative to Human3R after world-coordinate
+            alignment.
           </p>
           <div class="media-frame">
             <img src="static/images/global_motion.png" alt="Global motion comparison" loading="lazy">
@@ -286,6 +306,37 @@
           <div class="media-frame">
             <img src="static/images/local_mesh.png" alt="Local mesh reconstruction comparison" loading="lazy">
           </div>
+          <p class="section-caption">
+            Local mesh metric summary retained from the project page.
+          </p>
+          <div class="media-frame">
+            <img src="static/images/local_mesh_qualitative.png" alt="Qualitative local human mesh recovery" loading="lazy">
+          </div>
+          <p class="section-caption">
+            Qualitative comparison of local human mesh recovery. UniCon3R produces body pose and scene alignment closer
+            to ground truth, especially when clear scene support is visible.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt-section" id="physical-plausibility">
+    <div class="container is-max-widescreen">
+      <div class="columns is-centered">
+        <div class="column is-four-fifths has-text-centered">
+          <h2 class="title is-3">Physical Plausibility</h2>
+          <p class="section-intro">
+            UniCon3R uses contact-guided refinement to reduce floating and penetrating bodies in world-frame
+            reconstructions.
+          </p>
+          <div class="media-frame">
+            <img src="static/images/physical_plausibility.png" alt="Physical plausibility comparison on RICH" loading="lazy">
+          </div>
+          <p class="section-caption">
+            Qualitative comparison on RICH. Yellow boxes highlight floating or implausible Human3R reconstructions
+            compared to the more grounded predictions of UniCon3R.
+          </p>
         </div>
       </div>
     </div>
@@ -297,7 +348,7 @@
         <div class="column is-four-fifths">
           <h2 class="title is-3 has-text-centered">BibTeX</h2>
           <pre class="bibtex-block"><code>@misc{sur2026unicon3rcontactaware3dhumanscene,
-      title={UniCon3R: Contact-aware 3D Human-Scene Reconstruction from Monocular Video},
+      title={UniCon3R: Unified Contact-aware 4D Human-Scene Reconstruction from Monocular Video},
       author={Tanuj Sur and Shashank Tripathi and Nikos Athanasiou and Ha Linh Nguyen and Kai Xu and Michael J. Black and Angela Yao},
       year={2026},
       eprint={2604.19923},
