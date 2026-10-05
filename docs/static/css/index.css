@@ -101,7 +101,7 @@ a:hover {
 }
 
 .publication-venue {
-  margin: 1rem 0 1.25rem;
+  margin: 1rem 0 0.25rem;
   color: #111;
   font-size: 22px;
   font-weight: 700;
@@ -119,15 +119,15 @@ a:hover {
 }
 
 .publication-links {
-  margin: 0.75rem 0 0;
-  font-size: 18px;
+  margin: 0 0 1rem;
+  font-size: 14px;
   line-height: 1.7;
   text-align: center;
 }
 
 .publication-links span {
   display: inline-block;
-  margin: 0 14px;
+  margin: 0 10px;
   color: #224b8d;
 }
 
@@ -772,7 +772,7 @@ p,
   }
 
   .publication-links {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .title.is-3 {
