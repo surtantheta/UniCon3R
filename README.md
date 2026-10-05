@@ -81,11 +81,15 @@ The public code release is in preparation. This section will be updated with:
 ## Citation
 
 ```bibtex
-@article{sur2026unicon3r,
-  title={UniCon3R: Contact-aware 3D Human-Scene Reconstruction from Monocular Video},
-  author={Sur, Tanuj and Tripathi, Shashank and Athanasiou, Nikos and Nguyen, Ha Linh and Xu, Kai and Black, Michael J. and Yao, Angela},
-  journal={arXiv preprint arXiv:2604.19923},
-  year={2026}
+@inproceedings{sur2026unicon3r,
+  title={{UniCon3R}: Unified Contact-aware {4D} Human-Scene Reconstruction from Monocular Video},
+  author={Tanuj Sur and Shashank Tripathi and Nikos Athanasiou and Ha Linh Nguyen and Kai Xu and Michael J. Black and Angela Yao},
+  booktitle={Advances in Neural Information Processing Systems},
+  year={2026},
+  eprint={2604.19923},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  url={https://arxiv.org/abs/2604.19923},
 }
 ```
 
