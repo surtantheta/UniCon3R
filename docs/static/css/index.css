@@ -100,6 +100,24 @@ a:hover {
   margin: 0 10px;
 }
 
+.publication-venue {
+  margin: 1rem 0 1.25rem;
+  color: #111;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.publication-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  margin: 0 auto 1.25rem;
+  border-radius: 8px;
+  background-color: #000;
+}
+
 .publication-links {
   margin: 0.75rem 0 0;
   font-size: 18px;
